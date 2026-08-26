@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Confirmed – CargoShare</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <style>
+    body { background: linear-gradient(160deg, #FFF8F3 0%, #F8F5F0 60%, #F0EBE0 100%); }
+
+    .confirm-wrap {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: var(--space-10) var(--space-6) var(--space-16);
+    }
+
+    .success-banner {
+      text-align: center;
+      margin-bottom: var(--space-8);
+      animation: fade-in-up 0.6s ease both;
+    }
+
+    .success-icon {
+      font-size: 5rem;
+      display: block;
+      margin-bottom: var(--space-4);
+      animation: bounce-in 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.3s both;
+    }
+
+    .success-banner h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--status-available);
+      margin-bottom: var(--space-3);
+    }
+
+    .success-banner p {
+      font-size: 1rem;
+      color: var(--text-secondary);
+    }
+
+    /* Railway Ticket */
+    .ticket-wrap {
+      animation: fade-in-up 0.6s ease 0.2s both;
+      margin-bottom: var(--space-6);
+    }
+
+    .ticket {
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+    }
+
+    .ticket-top {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      padding: var(--space-6);
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ticket-top::before {
+      content: '🚆';
+      position: absolute;
+      font-size: 8rem;
+      opacity: 0.06;
+      right: -1rem;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .ticket-brand {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      opacity: 0.8;
+      margin-bottom: var(--space-1);
+    }
+
+    .ticket-tagline {
+      font-size: 1.25rem;
+      font-weight: 900;
+      margin-bottom: var(--space-5);
+    }
+
+    .ticket-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .ticket-perf {
+      background: var(--bg);
+      position: relative;
+      height: 26px;
+      display: flex;
+      align-items: center;
+    }
+
+    .ticket-perf::before { content:''; width:26px; height:26px; border-radius:50%; background:var(--bg); position:absolute; left:-13px; z-index:2; }
+    .ticket-perf::after  { content:''; width:26px; height:26px; border-radius:50%; background:var(--bg); position:absolute; right:-13px; z-index:2; }
+
+    .ticket-perf-line {
+      flex:1;
+      margin: 0 var(--space-5);
+      border-top: 2px dashed var(--border-strong);
+    }
+
+    .ticket-body {
+      background: white;
+      padding: var(--space-6);
+    }
+
+    .ticket-route-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+
+    .ticket-city {
+      flex: 1;
+    }
+
+    .ticket-city-name {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .ticket-city-time {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 2px;
+    }
+
+    .ticket-city-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .ticket-arrow-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .ticket-arrow-line {
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      position: relative;
+    }
+
+    .ticket-arrow-line::after {
+      content: '→';
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent);
+      font-size: 1rem;
+    }
+
+    .ticket-train-tag {
+      font-size: 0.72rem;
+      background: var(--bg-muted);
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .ticket-details-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+      border-top: 1px dashed var(--border);
+      padding-top: var(--space-4);
+    }
+
+    .tdt-item label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .tdt-item span {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .ticket-footer {
+      background: var(--bg-muted);
+      padding: var(--space-5) var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+    }
+
+    .ticket-booking-id {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--primary);
+      letter-spacing: 0.1em;
+    }
+
+    .ticket-booking-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 3px;
+    }
+
+    /* Action Buttons */
+    .confirm-actions {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      animation: fade-in-up 0.6s ease 0.5s both;
+    }
+
+    .confirm-actions .btn { flex: 1; min-width: 140px; }
+
+    .next-steps {
+      background: white;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      padding: var(--space-6);
+      margin-top: var(--space-6);
+      animation: fade-in-up 0.6s ease 0.6s both;
+    }
+
+    .next-steps h3 { font-size: 1rem; font-weight: 800; margin-bottom: var(--space-4); }
+
+    .next-step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .next-step-item:last-child { border-bottom: none; }
+    .next-step-icon { font-size: 1.25rem; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<div class="demo-banner">🚂 Demo Railway Network – Cargo capacity data managed by CargoShare Admin Portal</div>
+
+<nav class="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="dashboard.html" class="logo">
+        <div class="logo-icon">🚆</div>
+        <div class="logo-text">Cargo<span>Share</span></div>
+      </a>
+      <div class="nav-actions">
+        <a href="dashboard.html" class="btn btn-ghost btn-sm">Dashboard</a>
+        <a href="my-bookings.html" class="btn btn-secondary btn-sm">My Bookings</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="confirm-wrap">
+  <!-- Confetti fires on load -->
+
+  <div class="success-banner">
+    <span class="success-icon">🎉</span>
+    <h1>Cargo Booked Successfully!</h1>
+    <p>Your booking is confirmed. A notification has been sent to your account.</p>
+  </div>
+
+  <div class="ticket-wrap" id="ticketWrap">
+    <div class="loader-overlay" style="background:white;border-radius:var(--radius-xl)">
+      <div class="spinner"></div>
+      <div class="loader-text">Generating your ticket…</div>
+    </div>
+  </div>
+
+  <div class="confirm-actions">
+    <a href="track-cargo.html" class="btn btn-primary" id="trackBtn">📍 Track Cargo</a>
+    <a href="#" class="btn btn-accent" id="downloadBtn" onclick="downloadTicket()">⬇ Download Receipt</a>
+    <a href="dashboard.html" class="btn btn-ghost">🏠 Go to Dashboard</a>
+  </div>
+
+  <div class="next-steps">
+    <h3>📋 What Happens Next?</h3>
+    <div class="next-step-item">
+      <span class="next-step-icon">📦</span>
+      <div>
+        <strong>Submit your cargo</strong> to the railway cargo terminal at <strong id="sourceStation">origin station</strong> on the booking date with your Booking ID.
+      </div>
+    </div>
+    <div class="next-step-item">
+      <span class="next-step-icon">🚂</span>
+      <div>Your cargo will be <strong>loaded onto the train</strong> by the cargo team. You'll receive a notification when it's loaded.</div>
+    </div>
+    <div class="next-step-item">
+      <span class="next-step-icon">📍</span>
+      <div>Track your cargo in real-time using the <strong>Track Cargo</strong> feature. The receiver will be notified on arrival.</div>
+    </div>
+    <div class="next-step-item">
+      <span class="next-step-icon">✅</span>
+      <div>Once delivered, your booking will be marked <strong>Completed</strong>. The receiver must show the booking ID to collect the cargo.</div>
+    </div>
+  </div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  Auth.requireTrader();
+
+  const params    = new URLSearchParams(window.location.search);
+  const bookingId = params.get('id');
+
+  if (!bookingId) { window.location.href = 'dashboard.html'; return; }
+
+  const booking = DemoData.findBooking(bookingId);
+  if (!booking)  { window.location.href = 'dashboard.html'; return; }
+
+  // Update links
+  document.getElementById('trackBtn').href = 'track-cargo.html?id=' + booking.id;
+  document.getElementById('sourceStation').textContent = booking.source;
+
+  // Render ticket after short delay
+  setTimeout(() => {
+    renderTicket(booking);
+    Utils.launchConfetti();
+  }, 600);
+});
+
+function renderTicket(b) {
+  const wrap = document.getElementById('ticketWrap');
+  wrap.innerHTML = `
+    <div class="ticket">
+      <div class="ticket-top">
+        <div class="ticket-brand">🚆 CargoShare · Railway Cargo Booking</div>
+        <div class="ticket-tagline">Your Cargo is On Its Way!</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:var(--space-3)">
+          <div class="ticket-status-badge">✅ CONFIRMED</div>
+          <div style="opacity:0.8;font-size:0.8rem">Demo Railway Network</div>
+        </div>
+      </div>
+      <div class="ticket-perf"><div class="ticket-perf-line"></div></div>
+      <div class="ticket-body">
+        <div class="ticket-route-row">
+          <div class="ticket-city">
+            <div class="ticket-city-label">From</div>
+            <div class="ticket-city-name">${b.source}</div>
+            <div class="ticket-city-time">${b.departureTime}</div>
+          </div>
+          <div class="ticket-arrow-section">
+            <div class="ticket-arrow-line"></div>
+            <div class="ticket-train-tag">🚆 ${b.trainNumber}</div>
+          </div>
+          <div class="ticket-city" style="text-align:right">
+            <div class="ticket-city-label">To</div>
+            <div class="ticket-city-name">${b.destination}</div>
+            <div class="ticket-city-time">${b.arrivalTime}</div>
+          </div>
+        </div>
+        <div class="ticket-details-grid">
+          <div class="tdt-item"><label>Cargo Type</label><span>${b.cargoType}</span></div>
+          <div class="tdt-item"><label>Weight</label><span>${b.weight} kg</span></div>
+          <div class="tdt-item"><label>Packages</label><span>${b.packageCount}</span></div>
+          <div class="tdt-item"><label>Train Name</label><span>${b.trainName}</span></div>
+          <div class="tdt-item"><label>Total Amount</label><span style="color:var(--primary)">${Utils.formatCurrency(b.price?.total || 0)}</span></div>
+          <div class="tdt-item"><label>Date</label><span>${b.date || '2026-09-01'}</span></div>
+        </div>
+      </div>
+      <div class="ticket-footer">
+        <div>
+          <div class="ticket-booking-label">Booking ID</div>
+          <div class="ticket-booking-id">${b.bookingId}</div>
+        </div>
+        <div id="qrContainer" style="text-align:center">
+          <div style="font-size:0.6rem;color:var(--text-muted);margin-bottom:4px">SCAN QR</div>
+        </div>
+      </div>
+    </div>`;
+
+  // Render QR
+  Utils.renderQR(b.bookingId, document.getElementById('qrContainer').appendChild(document.createElement('div')));
+}
+
+function downloadTicket() {
+  Utils.toast('Receipt downloaded! (Demo – opens print dialog in real app)', 'info');
+  window.print();
+}
+</script>
+</body>
+</html>

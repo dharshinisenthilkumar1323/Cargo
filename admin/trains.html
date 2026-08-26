@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Train Management – CargoShare Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .admin-modal-overlay { position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.2s;backdrop-filter:blur(3px); }
+    .admin-modal-overlay.open { opacity:1;pointer-events:all; }
+    .admin-modal { background:var(--a-surface);border:1px solid var(--a-border);border-radius:18px;max-width:640px;width:100%;max-height:90vh;overflow-y:auto;transform:scale(0.96);transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 20px 60px rgba(15,23,42,0.18); }
+    .admin-modal-overlay.open .admin-modal { transform:scale(1); }
+    .admin-modal-header { padding:20px 24px;border-bottom:1px solid var(--a-border);display:flex;justify-content:space-between;align-items:center; }
+    .admin-modal-header h3 { font-size:1rem;font-weight:800; }
+    .admin-modal-body { padding:24px; }
+    .admin-modal-footer { padding:16px 24px;border-top:1px solid var(--a-border);display:flex;gap:10px;justify-content:flex-end; }
+    .form-row-2 { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+    .admin-form-group { margin-bottom:16px; }
+    .cargo-chips { display:flex;flex-wrap:wrap;gap:8px;margin-top:8px; }
+    .cargo-chip { background:var(--a-bg);border:1.5px solid var(--a-border);border-radius:20px;padding:5px 14px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:var(--a-tr);color:var(--a-text2); }
+    .cargo-chip.selected { background:var(--a-primary);color:white;border-color:var(--a-primary);box-shadow:0 3px 10px rgba(232,80,10,0.25); }
+    .modal-close-btn { background:var(--a-bg);border:1px solid var(--a-border);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;color:var(--a-muted);transition:var(--a-tr); }
+    .modal-close-btn:hover { background:var(--a-border);color:var(--a-text); }
+  </style>
+</head>
+<body class="admin-body">
+<div class="admin-wrapper">
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-logo">
+      <div class="admin-sidebar-logo-icon">🚆</div>
+      <div><div class="admin-sidebar-logo-text">CargoShare</div><div class="admin-sidebar-logo-sub">Admin Portal</div></div>
+    </div>
+    <div class="admin-portal-badge">🛡️ Restricted Access</div>
+    <nav class="admin-sidebar-nav">
+      <div class="admin-nav-section">
+        <div class="admin-nav-label">Overview</div>
+        <a href="dashboard.html" class="admin-nav-link"><span class="admin-nav-icon">📊</span> Dashboard</a>
+      </div>
+      <div class="admin-nav-section">
+        <div class="admin-nav-label">Management</div>
+        <a href="trains.html"   class="admin-nav-link active"><span class="admin-nav-icon">🚆</span> Trains</a>
+        <a href="capacity.html" class="admin-nav-link"><span class="admin-nav-icon">📦</span> Capacity</a>
+        <a href="bookings.html" class="admin-nav-link"><span class="admin-nav-icon">🎫</span> Bookings</a>
+        <a href="traders.html"  class="admin-nav-link"><span class="admin-nav-icon">👥</span> Traders</a>
+      </div>
+      <div class="admin-nav-section">
+        <div class="admin-nav-label">Analytics</div>
+        <a href="reports.html"  class="admin-nav-link"><span class="admin-nav-icon">📈</span> Reports</a>
+      </div>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div class="admin-user-info">
+        <div class="admin-avatar" id="adminAvatarEl">A</div>
+        <div><div class="admin-user-name" id="adminNameEl">Admin</div><div class="admin-user-role">System Administrator</div></div>
+      </div>
+      <button class="btn-admin-ghost" style="width:100%;justify-content:center" data-logout>🚪 Logout</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="admin-menu-toggle" onclick="document.getElementById('adminSidebar').classList.toggle('open')">☰</button>
+        <div class="admin-topbar-title"><h1>Train Management</h1><p>Add, edit and manage all trains</p></div>
+      </div>
+      <div class="admin-topbar-actions">
+        <div class="admin-search"><span class="admin-search-icon">🔍</span><input type="text" id="trainSearch" placeholder="Search trains…" oninput="renderTrains()"></div>
+        <button class="btn-admin-primary" onclick="openAddModal()">➕ Add Train</button>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <span class="admin-card-title">All Trains <span id="trainCount" style="font-size:0.82rem;font-weight:500;color:var(--a-muted)"></span></span>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Train #</th><th>Name</th><th>Route</th><th>Departure</th><th>Total</th><th>Available</th><th>₹/kg</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="trainsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="admin-modal-overlay" id="trainModal">
+  <div class="admin-modal">
+    <div class="admin-modal-header">
+      <h3 id="modalTitle">Add New Train</h3>
+      <button class="modal-close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="admin-modal-body">
+      <input type="hidden" id="editTrainId">
+      <div class="form-row-2">
+        <div class="admin-form-group"><label class="admin-form-label">Train Number *</label><input type="text" id="mTrainNum" class="admin-form-input" placeholder="e.g. 12673"></div>
+        <div class="admin-form-group"><label class="admin-form-label">Train Name *</label><input type="text" id="mTrainName" class="admin-form-input" placeholder="e.g. Cheran Express"></div>
+      </div>
+      <div class="form-row-2">
+        <div class="admin-form-group"><label class="admin-form-label">From City *</label>
+          <select id="mSource" class="admin-form-select"><option>Chennai</option><option>Bengaluru</option><option>Hyderabad</option><option>Coimbatore</option><option>Madurai</option></select>
+        </div>
+        <div class="admin-form-group"><label class="admin-form-label">To City *</label>
+          <select id="mDest" class="admin-form-select"><option>Coimbatore</option><option>Chennai</option><option>Madurai</option><option>Bengaluru</option><option>Hyderabad</option></select>
+        </div>
+      </div>
+      <div class="form-row-2">
+        <div class="admin-form-group"><label class="admin-form-label">Date</label><input type="date" id="mDate" class="admin-form-input"></div>
+        <div class="admin-form-group"><label class="admin-form-label">Departure Time</label><input type="time" id="mDepTime" class="admin-form-input"></div>
+      </div>
+      <div class="form-row-2">
+        <div class="admin-form-group"><label class="admin-form-label">Arrival Time</label><input type="time" id="mArrTime" class="admin-form-input"></div>
+        <div class="admin-form-group"><label class="admin-form-label">Price per kg (₹)</label><input type="number" id="mPrice" class="admin-form-input" placeholder="5.00" step="0.5"></div>
+      </div>
+      <div class="form-row-2">
+        <div class="admin-form-group"><label class="admin-form-label">Total Capacity (kg) *</label><input type="number" id="mTotalCap" class="admin-form-input" placeholder="5000"></div>
+        <div class="admin-form-group"><label class="admin-form-label">Available Capacity (kg) *</label><input type="number" id="mAvailCap" class="admin-form-input" placeholder="5000"></div>
+      </div>
+      <div class="admin-form-group">
+        <label class="admin-form-label">Allowed Cargo Types</label>
+        <div class="cargo-chips" id="cargoChips">
+          <div class="cargo-chip" data-type="Textiles" onclick="toggleChip(this)">Textiles</div>
+          <div class="cargo-chip" data-type="Electronics" onclick="toggleChip(this)">Electronics</div>
+          <div class="cargo-chip" data-type="Perishables" onclick="toggleChip(this)">Perishables</div>
+          <div class="cargo-chip" data-type="Machinery" onclick="toggleChip(this)">Machinery</div>
+          <div class="cargo-chip" data-type="Pharmaceuticals" onclick="toggleChip(this)">Pharmaceuticals</div>
+          <div class="cargo-chip" data-type="Handicrafts" onclick="toggleChip(this)">Handicrafts</div>
+          <div class="cargo-chip" data-type="Agricultural Products" onclick="toggleChip(this)">Agricultural</div>
+          <div class="cargo-chip selected" data-type="General Goods" onclick="toggleChip(this)">General Goods</div>
+        </div>
+      </div>
+      <div class="admin-form-group">
+        <label class="admin-form-label">Status</label>
+        <select id="mStatus" class="admin-form-select"><option value="active">Active</option><option value="inactive">Inactive</option></select>
+      </div>
+    </div>
+    <div class="admin-modal-footer">
+      <button class="btn-admin-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-admin-primary" onclick="saveTrain()">💾 Save Train</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/firebase-config.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  Auth.requireAdmin();
+  const a = Auth.getCurrentUser();
+  document.getElementById('adminNameEl').textContent   = a?.name || 'Admin';
+  document.getElementById('adminAvatarEl').textContent = (a?.name || 'A')[0].toUpperCase();
+  document.getElementById('mDate').value = new Date().toISOString().split('T')[0];
+  renderTrains();
+});
+
+function renderTrains() {
+  const q = document.getElementById('trainSearch').value.toLowerCase();
+  const trains = DemoData.getTrains().filter(t =>
+    !q || t.trainNumber.includes(q) || t.trainName.toLowerCase().includes(q) ||
+    t.source.toLowerCase().includes(q) || t.destination.toLowerCase().includes(q));
+  document.getElementById('trainCount').textContent = `(${trains.length})`;
+  const tbody = document.getElementById('trainsTableBody');
+  tbody.innerHTML = '';
+  trains.forEach(t => {
+    const pct = Utils.occupancyPercent(t.availableCapacity, t.totalCapacity);
+    const cls = pct >= 80 ? 'high' : pct >= 50 ? 'medium' : 'low';
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td style="font-weight:800;color:var(--a-primary)">${t.trainNumber}</td>
+      <td style="font-weight:600">${t.trainName}</td>
+      <td class="text-sm">${t.source} → ${t.destination}</td>
+      <td>${t.departureTime}</td>
+      <td>${Utils.formatWeight(t.totalCapacity)}</td>
+      <td>
+        <div style="font-weight:700;color:${t.availableCapacity===0?'var(--a-red)':'var(--a-green)'};margin-bottom:4px">${Utils.formatWeight(t.availableCapacity)}</div>
+        <div class="admin-capacity-track" style="width:100px"><div class="admin-capacity-fill ${cls}" style="width:${pct}%"></div></div>
+      </td>
+      <td style="font-weight:600">₹${t.pricePerKg}/kg</td>
+      <td><span class="admin-badge ${t.status==='active'?'admin-badge-active':'admin-badge-inactive'}">${t.status.toUpperCase()}</span></td>
+      <td>
+        <div style="display:flex;gap:8px">
+          <button class="btn-admin-ghost btn-admin-sm" onclick="editTrain('${t.id}')">✏️ Edit</button>
+          <button class="btn-admin-danger btn-admin-sm" onclick="deleteTrain('${t.id}')">🗑️</button>
+        </div>
+      </td>`;
+    tbody.appendChild(row);
+  });
+}
+
+function openAddModal() {
+  document.getElementById('modalTitle').textContent = 'Add New Train';
+  document.getElementById('editTrainId').value = '';
+  ['mTrainNum','mTrainName','mDepTime','mArrTime'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('mTotalCap').value = 5000;
+  document.getElementById('mAvailCap').value = 5000;
+  document.getElementById('mPrice').value = 5;
+  document.querySelectorAll('.cargo-chip').forEach(c => c.classList.toggle('selected', c.dataset.type === 'General Goods'));
+  document.getElementById('trainModal').classList.add('open');
+}
+
+function editTrain(id) {
+  const t = DemoData.findTrain(id); if (!t) return;
+  document.getElementById('modalTitle').textContent = 'Edit Train';
+  document.getElementById('editTrainId').value = id;
+  document.getElementById('mTrainNum').value  = t.trainNumber;
+  document.getElementById('mTrainName').value = t.trainName;
+  document.getElementById('mSource').value    = t.source;
+  document.getElementById('mDest').value      = t.destination;
+  document.getElementById('mDate').value      = t.date || '';
+  document.getElementById('mDepTime').value   = t.departureTime;
+  document.getElementById('mArrTime').value   = t.arrivalTime;
+  document.getElementById('mTotalCap').value  = t.totalCapacity;
+  document.getElementById('mAvailCap').value  = t.availableCapacity;
+  document.getElementById('mPrice').value     = t.pricePerKg;
+  document.getElementById('mStatus').value    = t.status;
+  document.querySelectorAll('.cargo-chip').forEach(c => c.classList.toggle('selected', t.allowedCargoTypes.includes(c.dataset.type)));
+  document.getElementById('trainModal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('trainModal').classList.remove('open'); }
+function toggleChip(el) { el.classList.toggle('selected'); }
+
+function saveTrain() {
+  const editId = document.getElementById('editTrainId').value;
+  const trains = DemoData.getTrains();
+  const types  = [...document.querySelectorAll('.cargo-chip.selected')].map(c => c.dataset.type);
+  const data   = {
+    trainNumber: document.getElementById('mTrainNum').value.trim(),
+    trainName: document.getElementById('mTrainName').value.trim(),
+    source: document.getElementById('mSource').value,
+    destination: document.getElementById('mDest').value,
+    date: document.getElementById('mDate').value,
+    departureTime: document.getElementById('mDepTime').value,
+    arrivalTime: document.getElementById('mArrTime').value,
+    totalCapacity: parseInt(document.getElementById('mTotalCap').value),
+    availableCapacity: parseInt(document.getElementById('mAvailCap').value),
+    pricePerKg: parseFloat(document.getElementById('mPrice').value),
+    allowedCargoTypes: types.length ? types : ['General Goods'],
+    status: document.getElementById('mStatus').value,
+    stops: [document.getElementById('mSource').value, document.getElementById('mDest').value]
+  };
+  if (!data.trainNumber || !data.trainName) { Utils.toast('Fill required fields','warning'); return; }
+  if (editId) {
+    const idx = trains.findIndex(t => t.id === editId);
+    if (idx !== -1) trains[idx] = { ...trains[idx], ...data };
+  } else {
+    trains.push({ id: Utils.generateId('train'), ...data });
+  }
+  DemoData.saveTrains(trains);
+  closeModal(); renderTrains();
+  Utils.toast(editId ? 'Train updated!' : 'Train added!', 'success');
+}
+
+function deleteTrain(id) {
+  if (!confirm('Delete this train? This cannot be undone.')) return;
+  DemoData.saveTrains(DemoData.getTrains().filter(t => t.id !== id));
+  renderTrains();
+  Utils.toast('Train deleted', 'info');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register as Trader – CargoShare</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <style>
+    body { background: linear-gradient(160deg, #FFF8F3 0%, #F8F5F0 60%, #F0EBE0 100%); min-height: 100vh; }
+
+    .register-wrap {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: var(--space-12) var(--space-6);
+    }
+
+    .register-logo {
+      text-align: center;
+      margin-bottom: var(--space-8);
+    }
+
+    .register-logo a {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .register-card {
+      background: white;
+      border-radius: var(--radius-xl);
+      padding: var(--space-10);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+    }
+
+    .register-header {
+      text-align: center;
+      margin-bottom: var(--space-8);
+    }
+
+    .register-header h1 {
+      font-size: 1.875rem;
+      font-weight: 900;
+      margin-bottom: var(--space-3);
+    }
+
+    .register-header p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+    }
+
+    .form-section-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--primary);
+      margin-bottom: var(--space-5);
+      padding-bottom: var(--space-2);
+      border-bottom: 2px solid var(--primary-glow);
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+    .form-section { margin-bottom: var(--space-8); }
+
+    @media (max-width: 540px) {
+      .form-row { grid-template-columns: 1fr; }
+      .register-card { padding: var(--space-6); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="register-wrap">
+  <div class="register-logo animate-fade-up">
+    <a href="index.html">
+      <div style="width:44px;height:44px;background:var(--primary);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.25rem">🚆</div>
+      Cargo<span style="color:var(--primary)">Share</span>
+    </a>
+  </div>
+
+  <div class="register-card animate-fade-up delay-100">
+    <div class="register-header">
+      <div style="font-size:2.5rem;margin-bottom:var(--space-4)">👤</div>
+      <h1>Create Your Trader Account</h1>
+      <p>Join CargoShare and find the cargo space you need.</p>
+    </div>
+
+    <div id="registerError" class="alert alert-error" style="display:none;margin-bottom:var(--space-5)">
+      <span class="alert-icon">❌</span>
+      <div class="alert-body"><div id="registerErrorMsg"></div></div>
+    </div>
+
+    <form id="registerForm">
+      <!-- Personal Info -->
+      <div class="form-section">
+        <div class="form-section-title">👤 Personal Information</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="fullName">Full Name *</label>
+            <input type="text" id="fullName" class="form-input" placeholder="Ravi Kumar" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="mobileNumber">Mobile Number *</label>
+            <input type="tel" id="mobileNumber" class="form-input" placeholder="9876543210" required maxlength="10">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="regEmail">Email Address *</label>
+          <input type="email" id="regEmail" class="form-input" placeholder="your@email.com" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="regPassword">Password *</label>
+            <input type="password" id="regPassword" class="form-input" placeholder="Min. 6 characters" required minlength="6">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="confirmPassword">Confirm Password *</label>
+            <input type="password" id="confirmPassword" class="form-input" placeholder="Re-enter password" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- Business Info -->
+      <div class="form-section">
+        <div class="form-section-title">🏢 Business Information</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="companyName">Business / Company Name *</label>
+            <input type="text" id="companyName" class="form-input" placeholder="Ravi Exports Ltd." required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="businessType">Business Type *</label>
+            <select id="businessType" class="form-select" required>
+              <option value="">Select type</option>
+              <option>Textiles Exporter</option>
+              <option>Electronics Distributor</option>
+              <option>Agricultural Products</option>
+              <option>Handicrafts Dealer</option>
+              <option>Machinery Supplier</option>
+              <option>Pharmaceutical Distributor</option>
+              <option>General Trader</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="city">City *</label>
+            <input type="text" id="city" class="form-input" placeholder="Chennai" required>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label class="form-label" for="address">Business Address</label>
+            <textarea id="address" class="form-textarea" placeholder="Full address with PIN code" style="min-height:80px"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Terms -->
+      <div class="form-group">
+        <label class="checkbox-wrap" id="termsWrap">
+          <input type="checkbox" id="termsCheck" required>
+          <span class="text-sm">I agree to the <a href="#" style="color:var(--primary);font-weight:700">Terms &amp; Conditions</a> and <a href="#" style="color:var(--primary);font-weight:700">Privacy Policy</a> of CargoShare.</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-full btn-lg" id="registerBtn">
+        🚀 Create Trader Account
+      </button>
+    </form>
+
+    <div style="text-align:center;margin-top:var(--space-6);font-size:0.9rem;color:var(--text-secondary)">
+      Already have an account? <a href="login.html" style="color:var(--primary);font-weight:700">Login as Trader →</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (Auth.isLoggedIn()) window.location.href = 'dashboard.html';
+
+  const form       = document.getElementById('registerForm');
+  const errBox     = document.getElementById('registerError');
+  const errMsg     = document.getElementById('registerErrorMsg');
+  const registerBtn= document.getElementById('registerBtn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const password = document.getElementById('regPassword').value;
+    const confirm  = document.getElementById('confirmPassword').value;
+
+    if (password !== confirm) {
+      errMsg.textContent = 'Passwords do not match. Please try again.';
+      errBox.style.display = 'flex';
+      return;
+    }
+
+    registerBtn.textContent = 'Creating Account…';
+    registerBtn.disabled = true;
+    errBox.style.display = 'none';
+
+    await new Promise(r => setTimeout(r, 800));
+
+    const data = {
+      name:        document.getElementById('fullName').value.trim(),
+      phone:       document.getElementById('mobileNumber').value.trim(),
+      email:       document.getElementById('regEmail').value.trim(),
+      password:    password,
+      companyName: document.getElementById('companyName').value.trim(),
+      businessType:document.getElementById('businessType').value,
+      city:        document.getElementById('city').value.trim(),
+      address:     document.getElementById('address').value.trim()
+    };
+
+    const result = Auth.traderRegister(data);
+    if (result.ok) {
+      Utils.toast('Account created! Redirecting to dashboard…', 'success');
+      setTimeout(() => window.location.href = 'dashboard.html', 1000);
+    } else {
+      errMsg.textContent = result.msg;
+      errBox.style.display = 'flex';
+      registerBtn.textContent = '🚀 Create Trader Account';
+      registerBtn.disabled = false;
+    }
+  });
+});
+</script>
+</body>
+</html>

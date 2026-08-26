@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trader Login – CargoShare</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #FFF8F3 0%, #F8F5F0 60%, #F0EBE0 100%);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .login-layout {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
+
+    .login-left {
+      background: linear-gradient(155deg, #1A1A2E 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: var(--space-16) var(--space-12);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-left::before {
+      content: '🚆';
+      position: absolute;
+      font-size: 12rem;
+      opacity: 0.04;
+      bottom: -2rem;
+      right: -2rem;
+    }
+
+    .login-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: 1.5rem;
+      font-weight: 900;
+      margin-bottom: var(--space-12);
+    }
+
+    .login-brand-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--primary);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .login-left h2 {
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: var(--space-5);
+    }
+
+    .login-left p {
+      color: rgba(255,255,255,0.7);
+      font-size: 1rem;
+      line-height: 1.7;
+      margin-bottom: var(--space-8);
+    }
+
+    .login-perks {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+
+    .login-perk {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: 0.9rem;
+    }
+
+    .login-perk-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .login-right {
+      padding: var(--space-12) var(--space-12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-form-wrap {
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .login-form-header {
+      margin-bottom: var(--space-8);
+    }
+
+    .login-form-header h1 {
+      font-size: 1.75rem;
+      font-weight: 900;
+      margin-bottom: var(--space-2);
+    }
+
+    .login-form-header p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .forgot-link {
+      font-size: 0.85rem;
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .forgot-link:hover { text-decoration: underline; }
+
+    .demo-hint {
+      background: var(--primary-glow);
+      border: 1px solid rgba(232,80,10,0.2);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      font-size: 0.85rem;
+      color: var(--primary-dark);
+      margin-bottom: var(--space-5);
+    }
+    .demo-hint strong { font-weight: 700; }
+
+    .login-divider {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      margin: var(--space-6) 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .login-divider::before, .login-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: var(--space-6);
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .login-footer a { color: var(--primary); font-weight: 700; }
+
+    @media (max-width: 768px) {
+      .login-layout { grid-template-columns: 1fr; }
+      .login-left { display: none; }
+      .login-right { padding: var(--space-8) var(--space-5); min-height: 100vh; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-layout">
+  <!-- Left Panel -->
+  <div class="login-left">
+    <div class="login-brand">
+      <div class="login-brand-icon">🚆</div>
+      CargoShare
+    </div>
+    <h2>Book Cargo Space on Any Train</h2>
+    <p>Join thousands of small traders who use CargoShare to find and book available railway cargo capacity.</p>
+    <div class="login-perks">
+      <div class="login-perk">
+        <div class="login-perk-icon">🔍</div>
+        <span>Search trains by route, date & cargo weight</span>
+      </div>
+      <div class="login-perk">
+        <div class="login-perk-icon">📊</div>
+        <span>See real-time available cargo capacity</span>
+      </div>
+      <div class="login-perk">
+        <div class="login-perk-icon">📱</div>
+        <span>Track your cargo from loading to delivery</span>
+      </div>
+      <div class="login-perk">
+        <div class="login-perk-icon">🎫</div>
+        <span>Digital booking tickets with QR code</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="login-right">
+    <div class="login-form-wrap animate-fade-up">
+      <div class="login-form-header">
+        <a href="login.html" style="color:var(--text-muted);font-size:0.85rem;display:inline-flex;align-items:center;gap:4px;margin-bottom:var(--space-5)">← Back</a>
+        <h1>Trader Login</h1>
+        <p>Sign in to find and book cargo space on trains</p>
+      </div>
+
+      <div class="demo-hint">
+        🎯 <strong>Demo Credentials:</strong> trader@demo.com / trader123
+      </div>
+
+      <div id="loginError" class="alert alert-error" style="display:none;margin-bottom:var(--space-4)">
+        <span class="alert-icon">❌</span>
+        <div class="alert-body"><div id="loginErrorMsg"></div></div>
+      </div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Email Address</label>
+          <div class="form-icon-wrap">
+            <span class="form-icon">📧</span>
+            <input type="email" id="loginEmail" class="form-input" placeholder="your@email.com" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-2)">
+            <label class="form-label" for="loginPassword" style="margin:0">Password</label>
+            <a href="#" class="forgot-link">Forgot password?</a>
+          </div>
+          <div class="form-icon-wrap">
+            <span class="form-icon">🔒</span>
+            <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-wrap">
+            <input type="checkbox" id="rememberMe">
+            <span class="text-sm">Remember me for 30 days</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-full btn-lg" id="loginBtn">
+          Login as Trader
+        </button>
+      </form>
+
+      <div class="login-divider">or</div>
+
+      <a href="login.html" class="btn btn-secondary w-full">
+        Register as New Trader
+      </a>
+
+      <div class="login-footer">
+        <p>Admin? <a href="login.html">Admin Login →</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Redirect if already logged in
+  if (Auth.isTrader()) { window.location.href = 'dashboard.html'; return; }
+  if (Auth.isAdmin())  { window.location.href = 'admin/dashboard.html'; return; }
+
+  const form    = document.getElementById('loginForm');
+  const errBox  = document.getElementById('loginError');
+  const errMsg  = document.getElementById('loginErrorMsg');
+  const loginBtn= document.getElementById('loginBtn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email    = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    loginBtn.textContent = 'Logging in…';
+    loginBtn.disabled = true;
+    errBox.style.display = 'none';
+
+    await new Promise(r => setTimeout(r, 600)); // simulate network
+
+    const result = Auth.traderLogin(email, password);
+    if (result.ok) {
+      Utils.toast('Welcome back! Redirecting to dashboard…', 'success');
+      setTimeout(() => window.location.href = 'dashboard.html', 800);
+    } else {
+      errMsg.textContent = result.msg;
+      errBox.style.display = 'flex';
+      loginBtn.textContent = 'Login as Trader';
+      loginBtn.disabled = false;
+    }
+  });
+});
+</script>
+</body>
+</html>

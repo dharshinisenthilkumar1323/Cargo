@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Cargo Space – CargoShare</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <style>
+    .booking-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: var(--space-6);
+      padding: var(--space-8) 0 var(--space-12);
+      align-items: start;
+    }
+
+    .step-panel { display: none; }
+    .step-panel.active { display: block; animation: fade-in-up 0.4s ease both; }
+
+    .step-card {
+      background: white;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .step-card-header {
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .step-card-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .step-card-header h3 { font-size: 1.1rem; font-weight: 800; }
+    .step-card-header p  { font-size: 0.82rem; color: var(--text-muted); }
+
+    .step-card-body { padding: var(--space-6); }
+
+    .step-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-4);
+      margin-top: var(--space-6);
+    }
+
+    /* Eligibility Card */
+    .eligibility-result {
+      text-align: center;
+      padding: var(--space-6);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-6);
+    }
+    .eligibility-result.pass { background: var(--status-available-bg); border: 2px solid #86EFAC; }
+    .eligibility-result.fail { background: var(--status-full-bg); border: 2px solid #FCA5A5; }
+
+    /* Booking Summary Sidebar */
+    .booking-summary {
+      background: white;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      position: sticky;
+      top: 80px;
+    }
+
+    .bs-header {
+      background: linear-gradient(135deg, #1A1A2E 0%, #2D2D4E 100%);
+      padding: var(--space-5) var(--space-6);
+      color: white;
+    }
+
+    .bs-header h3 { font-size: 0.95rem; font-weight: 800; }
+
+    .bs-body { padding: var(--space-5) var(--space-6); }
+
+    .bs-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-2) 0;
+      font-size: 0.88rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .bs-row:last-child { border-bottom: none; }
+
+    .bs-label { color: var(--text-muted); flex-shrink: 0; }
+    .bs-value { font-weight: 600; color: var(--text); text-align: right; }
+
+    .progress-steps-mini {
+      padding: var(--space-4) var(--space-6);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-muted);
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-5);
+    }
+
+    @media (max-width: 1024px) {
+      .booking-layout { grid-template-columns: 1fr; }
+      .booking-summary { position: static; }
+    }
+
+    @media (max-width: 540px) {
+      .form-row-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="demo-banner">🚂 Demo Railway Network – Cargo capacity data managed by CargoShare Admin Portal</div>
+
+<nav class="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="dashboard.html" class="logo">
+        <div class="logo-icon">🚆</div>
+        <div class="logo-text">Cargo<span>Share</span></div>
+      </a>
+      <div class="nav-links">
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="find-cargo.html" class="nav-link">Find Space</a>
+        <a href="my-bookings.html" class="nav-link">My Bookings</a>
+        <a href="track-cargo.html" class="nav-link">Track Cargo</a>
+        <a href="notifications.html" class="nav-link">Notifications</a>
+      </div>
+      <div class="nav-actions">
+        <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-user-name">Trader</span></a>
+        <button class="btn btn-secondary btn-sm" data-logout>Logout</button>
+      </div>
+      <button class="nav-hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:4px;color:rgba(255,255,255,0.7);font-size:0.85rem;margin-bottom:var(--space-3)">← Back</a>
+    <h1>Book Cargo Space</h1>
+    <p id="bookingHeaderSub">Complete the booking in 4 simple steps</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="booking-layout">
+    <div>
+      <!-- Step Progress -->
+      <div class="steps" style="margin-bottom:var(--space-6)">
+        <div class="step active" id="stepIndicator1">
+          <div class="step-circle">1</div>
+          <div class="step-label">Cargo Info</div>
+        </div>
+        <div class="step" id="stepIndicator2">
+          <div class="step-circle">2</div>
+          <div class="step-label">Sender</div>
+        </div>
+        <div class="step" id="stepIndicator3">
+          <div class="step-circle">3</div>
+          <div class="step-label">Receiver</div>
+        </div>
+        <div class="step" id="stepIndicator4">
+          <div class="step-circle">4</div>
+          <div class="step-label">Review &amp; Pay</div>
+        </div>
+      </div>
+
+      <!-- Step 1: Cargo Info -->
+      <div class="step-panel active" id="panel1">
+        <!-- Eligibility Check -->
+        <div id="eligibilitySection" style="display:none;margin-bottom:var(--space-5)">
+          <div id="eligibilityResult"></div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-card-header">
+            <div class="step-card-num">1</div>
+            <div>
+              <h3>Cargo Information</h3>
+              <p>Tell us about what you're shipping</p>
+            </div>
+          </div>
+          <div class="step-card-body">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="cargoName">Goods Name *</label>
+                <input type="text" id="cargoName" class="form-input" placeholder="e.g. Cotton Textiles" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cargoCategory">Goods Category *</label>
+                <select id="cargoCategory" class="form-select" required>
+                  <option value="">Select category</option>
+                  <option>Textiles</option>
+                  <option>Electronics</option>
+                  <option>Perishables</option>
+                  <option>Machinery</option>
+                  <option>Pharmaceuticals</option>
+                  <option>Handicrafts</option>
+                  <option>Agricultural Products</option>
+                  <option>General Goods</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="cargoWeight">Weight (kg) *</label>
+                <input type="number" id="cargoWeight" class="form-input" placeholder="e.g. 300" min="1" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="packageCount">Number of Packages *</label>
+                <input type="number" id="packageCount" class="form-input" placeholder="e.g. 15" min="1" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="dimensions">Package Dimensions</label>
+              <input type="text" id="dimensions" class="form-input" placeholder="e.g. 60x40x30 cm each">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cargoDesc">Description / Notes</label>
+              <textarea id="cargoDesc" class="form-textarea" placeholder="Any special handling instructions or notes about the cargo…"></textarea>
+            </div>
+            <div class="step-actions">
+              <span></span>
+              <button class="btn btn-primary" onclick="goToStep(2)">Next: Sender Details →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Sender -->
+      <div class="step-panel" id="panel2">
+        <div class="step-card">
+          <div class="step-card-header">
+            <div class="step-card-num">2</div>
+            <div>
+              <h3>Sender Details</h3>
+              <p>Who is sending this cargo?</p>
+            </div>
+          </div>
+          <div class="step-card-body">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="senderName">Sender Name *</label>
+                <input type="text" id="senderName" class="form-input" placeholder="Full name" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="senderPhone">Phone Number *</label>
+                <input type="tel" id="senderPhone" class="form-input" placeholder="10-digit mobile" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="senderAddress">Sender Address *</label>
+              <textarea id="senderAddress" class="form-textarea" placeholder="Full address with PIN code" required></textarea>
+            </div>
+            <div class="step-actions">
+              <button class="btn btn-ghost" onclick="goToStep(1)">← Back</button>
+              <button class="btn btn-primary" onclick="goToStep(3)">Next: Receiver Details →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Receiver -->
+      <div class="step-panel" id="panel3">
+        <div class="step-card">
+          <div class="step-card-header">
+            <div class="step-card-num">3</div>
+            <div>
+              <h3>Receiver Details</h3>
+              <p>Who is receiving this cargo?</p>
+            </div>
+          </div>
+          <div class="step-card-body">
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="receiverName">Receiver Name *</label>
+                <input type="text" id="receiverName" class="form-input" placeholder="Full name" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="receiverPhone">Phone Number *</label>
+                <input type="tel" id="receiverPhone" class="form-input" placeholder="10-digit mobile" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="receiverAddress">Receiver Address *</label>
+              <textarea id="receiverAddress" class="form-textarea" placeholder="Full address with PIN code" required></textarea>
+            </div>
+            <div class="step-actions">
+              <button class="btn btn-ghost" onclick="goToStep(2)">← Back</button>
+              <button class="btn btn-primary" onclick="goToStep(4)">Next: Review &amp; Pay →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Review & Pay -->
+      <div class="step-panel" id="panel4">
+        <div class="step-card" style="margin-bottom:var(--space-5)">
+          <div class="step-card-header">
+            <div class="step-card-num">4</div>
+            <div>
+              <h3>Review &amp; Payment</h3>
+              <p>Confirm your booking details and complete payment</p>
+            </div>
+          </div>
+          <div class="step-card-body">
+            <div id="bookingReview"></div>
+            <div class="price-table" id="priceBreakdown" style="margin-top:var(--space-5)"></div>
+
+            <!-- Mock Payment -->
+            <div style="margin-top:var(--space-6)">
+              <div class="form-section-title" style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--primary);margin-bottom:var(--space-4);padding-bottom:var(--space-2);border-bottom:2px solid var(--primary-glow)">💳 Payment (Demo)</div>
+              <div class="alert alert-info" style="margin-bottom:var(--space-4)">
+                <span class="alert-icon">ℹ️</span>
+                <div class="alert-body">This is a demo payment interface. No real transaction will occur.</div>
+              </div>
+              <div class="form-row-2">
+                <div class="form-group" style="grid-column:1/-1">
+                  <label class="form-label">Card Number</label>
+                  <input type="text" class="form-input" placeholder="4242 4242 4242 4242" maxlength="19" id="cardNum">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Expiry</label>
+                  <input type="text" class="form-input" placeholder="MM/YY" maxlength="5">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">CVV</label>
+                  <input type="text" class="form-input" placeholder="123" maxlength="3">
+                </div>
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <button class="btn btn-ghost" onclick="goToStep(3)">← Back</button>
+              <button class="btn btn-primary btn-lg" id="confirmBtn" onclick="confirmBooking()">
+                🔒 Confirm &amp; Pay
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar: Booking Summary -->
+    <div>
+      <div class="booking-summary animate-fade-up delay-100">
+        <div class="bs-header">
+          <h3>🎫 Booking Summary</h3>
+        </div>
+        <div class="bs-body" id="summaryBody">
+          <div class="text-muted text-sm" style="padding:var(--space-4) 0">Fill in the form to see your booking summary</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let currentStep = 1;
+let currentTrain = null;
+let bookingData  = {};
+
+document.addEventListener('DOMContentLoaded', () => {
+  Auth.requireTrader();
+  const params  = new URLSearchParams(window.location.search);
+  const trainId = params.get('trainId');
+  const weight  = parseFloat(params.get('weight')) || 0;
+
+  if (!trainId) { window.location.href = 'find-cargo.html'; return; }
+
+  const train = DemoData.findTrain(trainId);
+  if (!train) { window.location.href = 'find-cargo.html'; return; }
+  currentTrain = train;
+
+  document.getElementById('bookingHeaderSub').textContent = `${train.trainNumber} – ${train.source} → ${train.destination}`;
+  if (weight) document.getElementById('cargoWeight').value = weight;
+
+  // Pre-fill sender with user info
+  const user = Auth.getCurrentUser();
+  if (user) {
+    document.getElementById('senderName').value    = user.name    || '';
+    document.getElementById('senderPhone').value   = user.phone   || '';
+    document.getElementById('senderAddress').value = user.address || '';
+  }
+
+  // Show eligibility check
+  showEligibility(weight || 0);
+
+  // Weight change listener
+  document.getElementById('cargoWeight').addEventListener('input', (e) => {
+    showEligibility(parseFloat(e.target.value) || 0);
+  });
+
+  // Card number formatting
+  document.getElementById('cardNum').addEventListener('input', (e) => {
+    let v = e.target.value.replace(/\D/g,'').substring(0,16);
+    e.target.value = v.replace(/(.{4})/g,'$1 ').trim();
+  });
+});
+
+function showEligibility(weight) {
+  if (!currentTrain || !weight) return;
+  const el     = document.getElementById('eligibilitySection');
+  const resEl  = document.getElementById('eligibilityResult');
+  const avail  = currentTrain.availableCapacity;
+  const fits   = weight <= avail;
+
+  el.style.display = 'block';
+  if (fits) {
+    resEl.innerHTML = `
+      <div class="eligibility-result pass">
+        <div class="eligibility-icon">✅</div>
+        <div class="eligibility-title" style="color:var(--status-available)">Your cargo fits! 🎉</div>
+        <div class="eligibility-compare">
+          <div class="eligibility-val" style="background:var(--status-available-bg)">
+            <strong style="color:var(--status-available)">${weight} kg</strong>Your cargo
+          </div>
+          <div class="eligibility-op" style="color:var(--status-available)">≤</div>
+          <div class="eligibility-val">
+            <strong>${avail} kg</strong>Available space
+          </div>
+        </div>
+        <p class="text-sm" style="color:var(--status-available)">Great news! There's enough space for your cargo on this train.</p>
+      </div>`;
+  } else {
+    resEl.innerHTML = `
+      <div class="eligibility-result fail">
+        <div class="eligibility-icon">❌</div>
+        <div class="eligibility-title" style="color:var(--status-full)">Not Enough Cargo Space</div>
+        <div class="eligibility-compare">
+          <div class="eligibility-val" style="background:var(--status-full-bg)">
+            <strong style="color:var(--status-full)">${weight} kg</strong>Your cargo
+          </div>
+          <div class="eligibility-op" style="color:var(--status-full)">></div>
+          <div class="eligibility-val">
+            <strong>${avail} kg</strong>Available space
+          </div>
+        </div>
+        <a href="search-results.html" class="btn btn-danger btn-sm" style="margin-top:var(--space-3)">Find Another Train</a>
+      </div>`;
+  }
+}
+
+function goToStep(n) {
+  // Validate current step
+  if (n > currentStep) {
+    if (currentStep === 1) {
+      const name   = document.getElementById('cargoName').value;
+      const cat    = document.getElementById('cargoCategory').value;
+      const weight = parseFloat(document.getElementById('cargoWeight').value);
+      const pkgs   = document.getElementById('packageCount').value;
+      if (!name || !cat || !weight || !pkgs) { Utils.toast('Please fill all required fields', 'warning'); return; }
+      if (weight > currentTrain.availableCapacity) { Utils.toast('Cargo weight exceeds available capacity!', 'error'); return; }
+    }
+    if (currentStep === 2) {
+      if (!document.getElementById('senderName').value || !document.getElementById('senderPhone').value) {
+        Utils.toast('Please fill sender details', 'warning'); return;
+      }
+    }
+    if (currentStep === 3) {
+      if (!document.getElementById('receiverName').value || !document.getElementById('receiverPhone').value) {
+        Utils.toast('Please fill receiver details', 'warning'); return;
+      }
+    }
+  }
+
+  // Update step indicators
+  for (let i = 1; i <= 4; i++) {
+    const ind = document.getElementById('stepIndicator' + i);
+    ind.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
+    const circle = ind.querySelector('.step-circle');
+    if (i < n) circle.innerHTML = '✓';
+    else circle.innerHTML = i;
+  }
+
+  document.getElementById('panel' + currentStep).classList.remove('active');
+  document.getElementById('panel' + n).classList.add('active');
+  currentStep = n;
+
+  if (n === 4) buildReview();
+  updateSummary();
+}
+
+function updateSummary() {
+  if (!currentTrain) return;
+  const weight = parseFloat(document.getElementById('cargoWeight').value) || 0;
+  const price  = weight ? Utils.calcPrice(currentTrain.pricePerKg, weight) : null;
+
+  document.getElementById('summaryBody').innerHTML = `
+    <div class="bs-row"><span class="bs-label">Train</span><span class="bs-value">${currentTrain.trainNumber}</span></div>
+    <div class="bs-row"><span class="bs-label">Route</span><span class="bs-value">${currentTrain.source} → ${currentTrain.destination}</span></div>
+    <div class="bs-row"><span class="bs-label">Departure</span><span class="bs-value">${currentTrain.departureTime}</span></div>
+    <div class="bs-row"><span class="bs-label">Cargo</span><span class="bs-value">${document.getElementById('cargoName').value || '—'}</span></div>
+    <div class="bs-row"><span class="bs-label">Weight</span><span class="bs-value">${weight ? weight + ' kg' : '—'}</span></div>
+    ${price ? `<div class="bs-row" style="margin-top:var(--space-2);border-top:2px solid var(--border);padding-top:var(--space-3)"><span class="bs-label" style="font-weight:700">Total</span><span class="bs-value" style="font-size:1.1rem;color:var(--primary);font-weight:900">${Utils.formatCurrency(price.total)}</span></div>` : ''}`;
+}
+
+function buildReview() {
+  const weight = parseFloat(document.getElementById('cargoWeight').value) || 0;
+  const price  = Utils.calcPrice(currentTrain.pricePerKg, weight);
+
+  document.getElementById('bookingReview').innerHTML = `
+    <div class="alert alert-info" style="margin-bottom:var(--space-5)">
+      <span class="alert-icon">ℹ️</span>
+      <div class="alert-body">Please review your booking details before payment.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-5)">
+      <div>
+        <div class="form-label" style="margin-bottom:var(--space-3)">🚆 TRAIN</div>
+        <div style="font-weight:700">${currentTrain.trainNumber} – ${currentTrain.trainName}</div>
+        <div class="text-sm text-secondary">${currentTrain.source} → ${currentTrain.destination}</div>
+        <div class="text-sm text-secondary">${currentTrain.departureTime} – ${currentTrain.arrivalTime}</div>
+      </div>
+      <div>
+        <div class="form-label" style="margin-bottom:var(--space-3)">📦 CARGO</div>
+        <div style="font-weight:700">${document.getElementById('cargoName').value}</div>
+        <div class="text-sm text-secondary">${document.getElementById('cargoCategory').value}</div>
+        <div class="text-sm text-secondary">${weight} kg · ${document.getElementById('packageCount').value} packages</div>
+      </div>
+    </div>`;
+
+  document.getElementById('priceBreakdown').innerHTML = `
+    <div class="price-row"><span>Base Cargo Charge</span><span>${Utils.formatCurrency(price.base)}</span></div>
+    <div class="price-row"><span>Handling Charge</span><span>${Utils.formatCurrency(price.handling)}</span></div>
+    <div class="price-row"><span>Service Fee</span><span>${Utils.formatCurrency(price.serviceFee)}</span></div>
+    <div class="price-row total"><span>Total Amount</span><span>${Utils.formatCurrency(price.total)}</span></div>`;
+}
+
+async function confirmBooking() {
+  const btn = document.getElementById('confirmBtn');
+  btn.textContent = '⏳ Processing Payment…';
+  btn.disabled    = true;
+
+  await new Promise(r => setTimeout(r, 1800));
+
+  const weight   = parseFloat(document.getElementById('cargoWeight').value);
+  const price    = Utils.calcPrice(currentTrain.pricePerKg, weight);
+  const bookingId= Utils.generateBookingId();
+  const user     = Auth.getCurrentUser();
+
+  const booking = {
+    id:          Utils.generateId('booking'),
+    bookingId,
+    userId:      user.id,
+    trainId:     currentTrain.id,
+    trainNumber: currentTrain.trainNumber,
+    trainName:   currentTrain.trainName,
+    source:      currentTrain.source,
+    destination: currentTrain.destination,
+    departureTime:currentTrain.departureTime,
+    arrivalTime: currentTrain.arrivalTime,
+    cargoName:   document.getElementById('cargoName').value,
+    cargoType:   document.getElementById('cargoCategory').value,
+    weight,
+    packageCount:parseInt(document.getElementById('packageCount').value),
+    dimensions:  document.getElementById('dimensions').value,
+    senderDetails: {
+      name:    document.getElementById('senderName').value,
+      phone:   document.getElementById('senderPhone').value,
+      address: document.getElementById('senderAddress').value
+    },
+    receiverDetails: {
+      name:    document.getElementById('receiverName').value,
+      phone:   document.getElementById('receiverPhone').value,
+      address: document.getElementById('receiverAddress').value
+    },
+    price,
+    status:         'confirmed',
+    trackingStatus: 'booking_confirmed',
+    createdAt:      new Date().toISOString(),
+    date:           currentTrain.date
+  };
+
+  DemoData.addBooking(booking);
+  DemoData.addNotification({
+    id:      Utils.generateId('notif'),
+    userId:  user.id,
+    title:   'Booking Confirmed! 🎉',
+    message: `Your cargo booking ${bookingId} for Train ${currentTrain.trainNumber} (${currentTrain.source} → ${currentTrain.destination}) has been confirmed.`,
+    type:    'booking_confirmed',
+    read:    false,
+    createdAt: new Date().toISOString()
+  });
+
+  // Store booking ID for confirmation page
+  sessionStorage.setItem('lastBookingId', booking.id);
+  window.location.href = 'booking-confirm.html?id=' + booking.id;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Logs
+*.log
+node_modules/
+.env
+.DS_Store
+Thumbs.db
+patch-admin.ps1
+fix-links.ps1

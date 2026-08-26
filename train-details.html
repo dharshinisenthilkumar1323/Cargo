@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Train Details – CargoShare</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <style>
+    .detail-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: var(--space-6);
+      align-items: start;
+      padding: var(--space-8) 0 var(--space-12);
+    }
+
+    .detail-card {
+      background: white;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: var(--space-5);
+    }
+
+    .detail-train-header {
+      background: linear-gradient(135deg, #1A1A2E 0%, #2D2D4E 100%);
+      padding: var(--space-6);
+      color: white;
+    }
+
+    .detail-train-header h2 { font-size: 1.5rem; font-weight: 900; margin-bottom: 4px; }
+    .detail-train-header p  { opacity: 0.65; font-size: 0.85rem; }
+
+    .detail-route-visual {
+      padding: var(--space-6);
+    }
+
+    .route-visual-wrap {
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+      margin-bottom: var(--space-5);
+    }
+
+    .route-vis-station {
+      min-width: 80px;
+    }
+
+    .route-vis-time {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .route-vis-city {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+
+    .route-vis-line {
+      flex: 1;
+      position: relative;
+      height: 40px;
+      display: flex;
+      align-items: center;
+    }
+
+    .route-vis-track {
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 2px;
+    }
+
+    .route-vis-train {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.5rem;
+      background: white;
+      padding: 0 6px;
+    }
+
+    .stops-timeline {
+      padding: 0 var(--space-6) var(--space-6);
+    }
+
+    .stops-timeline h4 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: var(--space-4);
+    }
+
+    .stop-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-4);
+      padding-bottom: var(--space-5);
+      position: relative;
+    }
+
+    .stop-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 9px;
+      top: 18px;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .stop-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 3px solid var(--border);
+      background: white;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stop-item:first-child .stop-dot,
+    .stop-item:last-child .stop-dot {
+      border-color: var(--primary);
+      background: var(--primary);
+    }
+
+    .stop-name  { font-weight: 600; font-size: 0.92rem; }
+    .stop-label { font-size: 0.75rem; color: var(--text-muted); }
+
+    .detail-specs {
+      padding: var(--space-6);
+      border-top: 1px solid var(--border);
+    }
+
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-4);
+    }
+
+    .spec-item label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .spec-item span {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .cargo-types-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+    }
+
+    .cargo-type-tag {
+      background: var(--bg-muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* Booking Sidebar */
+    .booking-sidebar-card {
+      background: white;
+      border-radius: var(--radius-xl);
+      border: 2px solid var(--primary);
+      overflow: hidden;
+      box-shadow: var(--shadow-primary);
+      position: sticky;
+      top: 80px;
+    }
+
+    .bsc-header {
+      background: var(--primary);
+      padding: var(--space-5) var(--space-6);
+      color: white;
+    }
+
+    .bsc-header h3 { font-size: 1rem; font-weight: 800; }
+    .bsc-header p  { font-size: 0.8rem; opacity: 0.85; margin-top: 3px; }
+
+    .bsc-capacity {
+      padding: var(--space-6);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .bsc-avail {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+
+    .bsc-avail-num {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .bsc-avail-unit { color: var(--text-muted); font-weight: 500; }
+
+    .bsc-body { padding: var(--space-6); }
+
+    .price-per-kg {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-3) 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: 0.9rem;
+    }
+
+    .price-per-kg:last-of-type { border-bottom: none; }
+
+    @media (max-width: 1024px) {
+      .detail-layout { grid-template-columns: 1fr; }
+      .booking-sidebar-card { position: static; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="demo-banner">🚂 Demo Railway Network – Train and cargo capacity data managed by CargoShare Admin Portal</div>
+
+<nav class="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="dashboard.html" class="logo">
+        <div class="logo-icon">🚆</div>
+        <div class="logo-text">Cargo<span>Share</span></div>
+      </a>
+      <div class="nav-links">
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="find-cargo.html" class="nav-link">Find Space</a>
+        <a href="my-bookings.html" class="nav-link">My Bookings</a>
+        <a href="track-cargo.html" class="nav-link">Track Cargo</a>
+        <a href="notifications.html" class="nav-link">Notifications</a>
+      </div>
+      <div class="nav-actions">
+        <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-user-name">Trader</span></a>
+        <button class="btn btn-secondary btn-sm" data-logout>Logout</button>
+      </div>
+      <button class="nav-hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:4px;color:rgba(255,255,255,0.7);font-size:0.85rem;margin-bottom:var(--space-3)">← Back to Results</a>
+    <h1 id="trainHeaderTitle">Train Details</h1>
+    <p id="trainHeaderSub"></p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="detail-layout">
+    <!-- Main Content -->
+    <div>
+      <div id="mainContent">
+        <div class="loader-overlay"><div class="spinner"></div><div class="loader-text">Loading train details…</div></div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div>
+      <div class="booking-sidebar-card animate-fade-up delay-200" id="sidebarCard" style="display:none">
+        <div class="bsc-header">
+          <h3>📦 Book Cargo Space</h3>
+          <p>Available on this train right now</p>
+        </div>
+        <div class="bsc-capacity">
+          <div class="bsc-avail">
+            <span class="bsc-avail-num" id="sideAvailNum">—</span>
+            <span class="bsc-avail-unit">kg available</span>
+          </div>
+          <div class="capacity-bar-wrap" style="margin:0">
+            <div class="capacity-bar-track" style="height:14px">
+              <div class="capacity-bar-fill" id="sideCapBar" data-width="0%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:0.78rem;color:var(--text-muted)">
+              <span id="sideOccupied">0% occupied</span>
+              <span id="sideTotalCap">of 0 kg total</span>
+            </div>
+          </div>
+        </div>
+        <div class="bsc-body">
+          <div class="price-per-kg">
+            <span>Price per kg</span>
+            <span style="font-weight:700" id="sidePriceKg">₹5.00</span>
+          </div>
+          <div id="weightEstSection" style="margin-top:var(--space-4)">
+            <label class="form-label" style="font-size:0.8rem">Enter your cargo weight:</label>
+            <div style="display:flex;gap:var(--space-3);margin-top:var(--space-2)">
+              <input type="number" id="estWeight" class="form-input" placeholder="kg" min="1" style="flex:1">
+              <button onclick="estimatePrice()" class="btn btn-accent btn-sm">Estimate</button>
+            </div>
+            <div id="priceEstimate" style="margin-top:var(--space-4);display:none">
+              <div class="price-table">
+                <div class="price-row"><span>Base Charge</span><span id="pBase">—</span></div>
+                <div class="price-row"><span>Handling</span><span id="pHandling">—</span></div>
+                <div class="price-row"><span>Service Fee</span><span id="pService">—</span></div>
+                <div class="price-row total"><span>Estimated Total</span><span id="pTotal">—</span></div>
+              </div>
+            </div>
+          </div>
+          <a href="#" id="bookNowBtn" class="btn btn-primary w-full btn-lg" style="margin-top:var(--space-5)">Book This Cargo Space →</a>
+          <div id="fullMsg" class="alert alert-error" style="display:none;margin-top:var(--space-4)">
+            <span class="alert-icon">🔴</span>
+            <div class="alert-body"><strong>Train is full.</strong> No cargo space available. <a href="search-results.html" style="color:var(--status-full)">Try another train</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let currentTrain = null;
+let urlWeight    = 0;
+
+document.addEventListener('DOMContentLoaded', () => {
+  Auth.requireTrader();
+  const params = new URLSearchParams(window.location.search);
+  const trainId = params.get('id');
+  urlWeight = parseFloat(params.get('weight')) || 0;
+  if (urlWeight) document.getElementById('estWeight').value = urlWeight;
+
+  if (!trainId) { window.location.href = 'find-cargo.html'; return; }
+
+  setTimeout(() => {
+    const train = DemoData.findTrain(trainId);
+    if (!train) { document.getElementById('mainContent').innerHTML = '<div class="alert alert-error"><span class="alert-icon">❌</span><div class="alert-body">Train not found.</div></div>'; return; }
+    currentTrain = train;
+    renderTrain(train);
+  }, 600);
+
+  // Real-time capacity update listener
+  window.addEventListener('capacityUpdated', (e) => {
+    if (e.detail.trainId === trainId) {
+      const newVal = e.detail.newAvailable;
+      document.getElementById('sideAvailNum').textContent = newVal;
+      const pct = currentTrain ? Utils.occupancyPercent(newVal, currentTrain.totalCapacity) : 0;
+      document.getElementById('sideCapBar').style.width = pct + '%';
+    }
+  });
+});
+
+function renderTrain(t) {
+  const status = Utils.getCapacityStatus(t.availableCapacity, t.totalCapacity);
+  const pct    = Utils.occupancyPercent(t.availableCapacity, t.totalCapacity);
+  const dur    = Utils.calcDuration(t.departureTime, t.arrivalTime);
+
+  document.getElementById('trainHeaderTitle').textContent = `${t.trainNumber} – ${t.trainName}`;
+  document.getElementById('trainHeaderSub').textContent   = `${t.source} → ${t.destination} · ${t.departureTime} – ${t.arrivalTime}`;
+
+  const stops = t.stops || [t.source, t.destination];
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="detail-card animate-fade-up">
+      <div class="detail-train-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:var(--space-3)">
+          <div>
+            <h2>🚆 ${t.trainNumber} – ${t.trainName}</h2>
+            <p>Indian Railways Cargo Train · ${stops.length} stops</p>
+          </div>
+          <span class="badge ${status.badge}" style="font-size:0.85rem;padding:6px 14px">${status.dot} ${status.label}</span>
+        </div>
+      </div>
+      <div class="detail-route-visual">
+        <div class="route-visual-wrap">
+          <div class="route-vis-station">
+            <div class="route-vis-time">${t.departureTime}</div>
+            <div class="route-vis-city">${t.source}</div>
+          </div>
+          <div class="route-vis-line">
+            <div class="route-vis-track"></div>
+            <div class="route-vis-train">🚆</div>
+          </div>
+          <div class="route-vis-station" style="text-align:right">
+            <div class="route-vis-time">${t.arrivalTime}</div>
+            <div class="route-vis-city">${t.destination}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:var(--space-6);font-size:0.85rem;color:var(--text-secondary)">
+          <span>⏱️ Duration: <strong>${dur}</strong></span>
+          <span>📅 Date: <strong>${t.date || 'Flexible'}</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-card animate-fade-up delay-100">
+      <div class="stops-timeline">
+        <h4>Route Stops</h4>
+        ${stops.map((s, i) => `
+          <div class="stop-item">
+            <div class="stop-dot"></div>
+            <div>
+              <div class="stop-name">${s}</div>
+              <div class="stop-label">${i === 0 ? 'Origin · ' + t.departureTime : i === stops.length-1 ? 'Destination · ' + t.arrivalTime : 'Intermediate stop'}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="detail-card animate-fade-up delay-200">
+      <div class="detail-specs">
+        <h4 style="font-weight:800;margin-bottom:var(--space-5)">📦 Cargo Capacity Details</h4>
+        <div class="capacity-bar-wrap">
+          <div class="capacity-bar-header">
+            <span class="capacity-bar-label">Available: ${Utils.formatWeight(t.availableCapacity)}</span>
+            <span class="capacity-bar-value">${pct}% occupied</span>
+          </div>
+          <div class="capacity-bar-track" style="height:16px">
+            <div class="capacity-bar-fill ${status.cls}" data-width="${pct}%"></div>
+          </div>
+        </div>
+        <div class="specs-grid" style="margin-top:var(--space-6)">
+          <div class="spec-item">
+            <label>Total Capacity</label>
+            <span>${Utils.formatWeight(t.totalCapacity)}</span>
+          </div>
+          <div class="spec-item">
+            <label>Available Capacity</label>
+            <span style="color:var(--status-available)">${Utils.formatWeight(t.availableCapacity)}</span>
+          </div>
+          <div class="spec-item">
+            <label>Booked Capacity</label>
+            <span>${Utils.formatWeight(t.totalCapacity - t.availableCapacity)}</span>
+          </div>
+          <div class="spec-item">
+            <label>Price per kg</label>
+            <span>${Utils.formatCurrency(t.pricePerKg)}</span>
+          </div>
+        </div>
+        <div style="margin-top:var(--space-5)">
+          <label class="form-label" style="font-size:0.82rem;color:var(--text-muted)">SUPPORTED CARGO TYPES</label>
+          <div class="cargo-types-wrap">
+            ${t.allowedCargoTypes.map(c => `<span class="cargo-type-tag">📦 ${c}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // Sidebar
+  const sidebar = document.getElementById('sidebarCard');
+  sidebar.style.display = 'block';
+  document.getElementById('sideAvailNum').textContent = t.availableCapacity;
+  document.getElementById('sideOccupied').textContent = pct + '% occupied';
+  document.getElementById('sideTotalCap').textContent = 'of ' + Utils.formatWeight(t.totalCapacity) + ' total';
+  document.getElementById('sidePriceKg').textContent  = Utils.formatCurrency(t.pricePerKg) + '/kg';
+
+  const capBar = document.getElementById('sideCapBar');
+  capBar.className = `capacity-bar-fill ${status.cls}`;
+  capBar.setAttribute('data-width', pct + '%');
+
+  if (t.availableCapacity === 0) {
+    document.getElementById('bookNowBtn').style.display = 'none';
+    document.getElementById('fullMsg').style.display = 'flex';
+  } else {
+    document.getElementById('bookNowBtn').href = `booking.html?trainId=${t.id}${urlWeight ? '&weight=' + urlWeight : ''}`;
+  }
+
+  setTimeout(Utils.animateCapacityBars, 300);
+  if (urlWeight) estimatePrice();
+}
+
+function estimatePrice() {
+  if (!currentTrain) return;
+  const weight = parseFloat(document.getElementById('estWeight').value);
+  if (!weight || weight <= 0) { Utils.toast('Enter a valid weight', 'warning'); return; }
+  const price = Utils.calcPrice(currentTrain.pricePerKg, weight);
+  document.getElementById('pBase').textContent    = Utils.formatCurrency(price.base);
+  document.getElementById('pHandling').textContent= Utils.formatCurrency(price.handling);
+  document.getElementById('pService').textContent = Utils.formatCurrency(price.serviceFee);
+  document.getElementById('pTotal').textContent   = Utils.formatCurrency(price.total);
+  document.getElementById('priceEstimate').style.display = 'block';
+
+  // Update book link with weight
+  if (currentTrain && currentTrain.availableCapacity > 0) {
+    document.getElementById('bookNowBtn').href = `booking.html?trainId=${currentTrain.id}&weight=${weight}`;
+  }
+}
+</script>
+</body>
+</html>

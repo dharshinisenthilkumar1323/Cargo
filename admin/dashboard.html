@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard – CargoShare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+    .dash-grid  { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+    .activity-row { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--a-border); }
+    .activity-row:last-child { border-bottom: none; }
+    .activity-icon { width: 36px; height: 36px; border-radius: 9px; background: rgba(232,80,10,0.08); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .activity-title { font-size: 0.875rem; font-weight: 600; }
+    .activity-sub   { font-size: 0.775rem; color: var(--a-muted); margin-top: 2px; }
+    @media (max-width:1100px){ .dash-grid{ grid-template-columns:1fr; } .stats-grid{ grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:600px) { .stats-grid{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body class="admin-body">
+<div class="admin-wrapper">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-logo">
+      <div class="admin-sidebar-logo-icon">🚆</div>
+      <div>
+        <div class="admin-sidebar-logo-text">CargoShare</div>
+        <div class="admin-sidebar-logo-sub">Admin Portal</div>
+      </div>
+    </div>
+    <div class="admin-portal-badge">🛡️ Restricted Access</div>
+    <nav class="admin-sidebar-nav">
+      <div class="admin-nav-section">
+        <div class="admin-nav-label">Overview</div>
+        <a href="dashboard.html" class="admin-nav-link active"><span class="admin-nav-icon">📊</span> Dashboard</a>
+      </div>
+      <div class="admin-nav-section">
+        <div class="admin-nav-label">Management</div>
+        <a href="trains.html"   class="admin-nav-link"><span class="admin-nav-icon">🚆</span> Trains</a>
+        <a href="capacity.html" class="admin-nav-link"><span class="admin-nav-icon">📦</span> Capacity</a>
+        <a href="bookings.html" class="admin-nav-link"><span class="admin-nav-icon">🎫</span> Bookings</a>
+        <a href="traders.html"  class="admin-nav-link"><span class="admin-nav-icon">👥</span> Traders</a>
+      </div>
+      <div class="admin-nav-section">
+        <div class="admin-nav-label">Analytics</div>
+        <a href="reports.html"  class="admin-nav-link"><span class="admin-nav-icon">📈</span> Reports</a>
+      </div>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div class="admin-user-info">
+        <div class="admin-avatar" id="adminAvatarEl">A</div>
+        <div>
+          <div class="admin-user-name" id="adminNameEl">Admin</div>
+          <div class="admin-user-role">System Administrator</div>
+        </div>
+      </div>
+      <button class="btn-admin-ghost" style="width:100%;justify-content:center" data-logout>🚪 Logout</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="admin-menu-toggle" onclick="document.getElementById('adminSidebar').classList.toggle('open')">☰</button>
+        <div class="admin-topbar-title">
+          <h1>Dashboard</h1>
+          <p>CargoShare Control Center</p>
+        </div>
+      </div>
+      <div class="admin-topbar-actions">
+        <div class="admin-notif-btn">🔔<span class="admin-notif-badge">3</span></div>
+        <a href="trains.html" class="btn-admin-primary">+ Add Train</a>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="admin-stat-card" data-icon="🚆"><div class="admin-stat-value" id="sTotalTrains">–</div><div class="admin-stat-label">Total Trains</div></div>
+        <div class="admin-stat-card" data-icon="✅"><div class="admin-stat-value" id="sActiveTrains">–</div><div class="admin-stat-label">Active Trains</div></div>
+        <div class="admin-stat-card" data-icon="🎫"><div class="admin-stat-value" id="sTotalBookings">–</div><div class="admin-stat-label">Total Bookings</div></div>
+        <div class="admin-stat-card" data-icon="📦"><div class="admin-stat-value" id="sTotalCapacity">–</div><div class="admin-stat-label">Available Capacity</div></div>
+        <div class="admin-stat-card" data-icon="⚖️"><div class="admin-stat-value" id="sTotalCargo">–</div><div class="admin-stat-label">Cargo Booked</div></div>
+        <div class="admin-stat-card" data-icon="👥"><div class="admin-stat-value" id="sTraders">–</div><div class="admin-stat-label">Registered Traders</div><div class="admin-stat-change up">↑ Active</div></div>
+      </div>
+
+      <div class="dash-grid">
+        <!-- Train Capacity Table -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <span class="admin-card-title">🚆 Train Capacity Overview</span>
+            <a href="capacity.html" class="btn-admin-ghost btn-admin-sm">Manage →</a>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>Train</th><th>Route</th><th>Available</th><th>Occupancy</th><th>Status</th></tr></thead>
+              <tbody id="trainOverviewBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="admin-card">
+          <div class="admin-card-header"><span class="admin-card-title">🕐 Recent Activity</span></div>
+          <div class="admin-card-body" id="activityList"></div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="admin-card" style="margin-top:20px">
+        <div class="admin-card-header"><span class="admin-card-title">⚡ Quick Actions</span></div>
+        <div class="admin-card-body" style="display:flex;flex-wrap:wrap;gap:10px">
+          <a href="trains.html"   class="btn-admin-primary">➕ Add New Train</a>
+          <a href="capacity.html" class="btn-admin-primary">📦 Update Capacity</a>
+          <a href="bookings.html" class="btn-admin-primary">🎫 Manage Bookings</a>
+          <a href="traders.html"  class="btn-admin-ghost">👥 View Traders</a>
+          <a href="reports.html"  class="btn-admin-ghost">📈 Reports</a>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/firebase-config.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  Auth.requireAdmin();
+  const admin = Auth.getCurrentUser();
+  document.getElementById('adminNameEl').textContent   = admin?.name || 'Admin';
+  document.getElementById('adminAvatarEl').textContent = (admin?.name || 'A')[0].toUpperCase();
+
+  const trains   = DemoData.getTrains();
+  const bookings = DemoData.getBookings();
+  const users    = DemoData.getUsers().filter(u => u.role === 'trader');
+
+  const active     = trains.filter(t => t.availableCapacity > 0).length;
+  const totalAvail = trains.reduce((s,t) => s + t.availableCapacity, 0);
+  const totalKg    = bookings.reduce((s,b) => s + (b.weight || 0), 0);
+
+  document.getElementById('sTotalTrains').textContent   = trains.length;
+  document.getElementById('sActiveTrains').textContent  = active;
+  document.getElementById('sTotalBookings').textContent = bookings.length;
+  document.getElementById('sTotalCapacity').textContent = Utils.formatWeight(totalAvail);
+  document.getElementById('sTotalCargo').textContent    = Utils.formatWeight(totalKg);
+  document.getElementById('sTraders').textContent       = users.length || DemoData.getTraders().length;
+
+  // Train table
+  const tbody = document.getElementById('trainOverviewBody');
+  trains.forEach(t => {
+    const pct = Utils.occupancyPercent(t.availableCapacity, t.totalCapacity);
+    const cls = pct >= 80 ? 'high' : pct >= 50 ? 'medium' : 'low';
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td style="font-weight:800;color:var(--a-primary)">${t.trainNumber}</td>
+      <td class="text-sm">${t.source} → ${t.destination}</td>
+      <td style="font-weight:700;color:${t.availableCapacity===0?'var(--a-red)':'var(--a-green)'}">${Utils.formatWeight(t.availableCapacity)}</td>
+      <td style="min-width:130px">
+        <div class="admin-capacity-wrap">
+          <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--a-muted);margin-bottom:4px">
+            <span>${pct}% occupied</span>
+          </div>
+          <div class="admin-capacity-track"><div class="admin-capacity-fill ${cls}" style="width:${pct}%"></div></div>
+        </div>
+      </td>
+      <td><span class="admin-badge ${t.availableCapacity===0?'admin-badge-inactive':'admin-badge-active'}">${t.availableCapacity===0?'FULL':'ACTIVE'}</span></td>`;
+    tbody.appendChild(row);
+  });
+
+  // Activity
+  const acts = [
+    { icon:'🎫', title:'New Booking CS10246', sub:'Senthil Kumar – 150kg Electronics · Just now' },
+    { icon:'🎫', title:'New Booking CS10245', sub:'Senthil Kumar – 300kg Textiles · 1h ago' },
+    { icon:'✅', title:'Delivery Completed CS10240', sub:'Pearl City Express · Madurai · 2d ago' },
+    { icon:'📦', title:'Cargo Loaded – Train 12673', sub:'300kg Cotton Textiles loaded · 5h ago' },
+  ];
+  document.getElementById('activityList').innerHTML = acts.map(a => `
+    <div class="activity-row">
+      <div class="activity-icon">${a.icon}</div>
+      <div><div class="activity-title">${a.title}</div><div class="activity-sub">${a.sub}</div></div>
+    </div>`).join('');
+});
+</script>
+</body>
+</html>

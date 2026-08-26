@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Cargo – CargoShare</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <style>
+    .track-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: var(--space-6);
+      align-items: start;
+      padding: var(--space-8) 0 var(--space-12);
+    }
+
+    .track-search-bar {
+      background: white;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      padding: var(--space-5);
+      display: flex;
+      gap: var(--space-3);
+      align-items: flex-end;
+      margin-bottom: var(--space-6);
+    }
+
+    .track-search-bar .form-group { flex: 1; margin: 0; }
+
+    .track-info-card {
+      background: white;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: var(--space-5);
+    }
+
+    .tic-header {
+      background: linear-gradient(135deg, #1A1A2E 0%, #2D2D4E 100%);
+      padding: var(--space-5) var(--space-6);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+
+    .tic-train { font-size: 1.1rem; font-weight: 800; }
+    .tic-sub   { font-size: 0.78rem; opacity: 0.65; margin-top: 3px; }
+
+    .tic-body { padding: var(--space-6); }
+
+    .tic-route {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+
+    .tic-city { flex: 1; }
+    .tic-city-name { font-size: 1.375rem; font-weight: 900; }
+    .tic-city-time { font-size: 0.9rem; font-weight: 600; color: var(--primary); margin-top: 3px; }
+    .tic-city-label{ font-size: 0.72rem; color: var(--text-muted); }
+
+    .tic-track-line {
+      flex: 1;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .tic-track-train {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      background: white;
+      padding: 0 4px;
+    }
+
+    .tic-meta-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+      border-top: 1px solid var(--border);
+      padding-top: var(--space-4);
+    }
+
+    .tic-meta-item label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .tic-meta-item span { font-size: 0.92rem; font-weight: 700; }
+
+    /* Timeline */
+    .timeline-card {
+      background: white;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      padding: var(--space-6);
+    }
+
+    .timeline-card h3 { font-size: 1rem; font-weight: 800; margin-bottom: var(--space-6); }
+
+    .tracking-timeline {
+      position: relative;
+      padding-left: 48px;
+    }
+
+    .tracking-timeline::before {
+      content: '';
+      position: absolute;
+      left: 18px;
+      top: 24px;
+      bottom: 24px;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .tracking-event {
+      position: relative;
+      padding-bottom: var(--space-8);
+    }
+
+    .tracking-event:last-child { padding-bottom: 0; }
+
+    .tracking-dot {
+      position: absolute;
+      left: -36px;
+      top: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--bg-muted);
+      border: 3px solid var(--border);
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      color: transparent;
+    }
+
+    .tracking-event.done .tracking-dot {
+      background: var(--status-available);
+      border-color: var(--status-available);
+      color: white;
+      font-size: 0.7rem;
+    }
+
+    .tracking-event.done .tracking-dot::after { content: '✓'; }
+
+    .tracking-event.active .tracking-dot {
+      background: var(--primary);
+      border-color: var(--primary);
+      animation: pulse-ring 2s infinite;
+    }
+
+    .tracking-event.active .tracking-dot::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: white; }
+
+    .tracking-icon { font-size: 1.5rem; margin-bottom: var(--space-2); }
+    .tracking-title { font-weight: 800; font-size: 1rem; color: var(--text); }
+    .tracking-event.pending .tracking-title { color: var(--text-muted); }
+    .tracking-desc  { font-size: 0.85rem; color: var(--text-secondary); margin-top: 3px; }
+    .tracking-time  { font-size: 0.78rem; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
+
+    /* Sidebar: Current Status */
+    .status-card {
+      background: white;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: var(--space-5);
+    }
+
+    .status-card-header {
+      background: var(--primary);
+      padding: var(--space-5) var(--space-6);
+      color: white;
+    }
+
+    .status-card-header h3 { font-size: 0.95rem; font-weight: 800; }
+
+    .status-card-body { padding: var(--space-6); }
+
+    .current-status-icon { font-size: 3rem; margin-bottom: var(--space-3); }
+    .current-status-text { font-size: 1.25rem; font-weight: 800; margin-bottom: var(--space-2); }
+    .current-status-desc { font-size: 0.88rem; color: var(--text-secondary); }
+
+    .status-progress {
+      margin-top: var(--space-4);
+    }
+
+    .status-progress-bar-track {
+      height: 8px;
+      background: var(--bg-muted);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .status-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: var(--radius-full);
+      transition: width 1s ease;
+    }
+
+    .status-progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-top: var(--space-2);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    @media (max-width: 1024px) {
+      .track-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .tic-meta-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="demo-banner">🚂 Demo Railway Network – Cargo tracking data managed by CargoShare Admin Portal</div>
+
+<nav class="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="dashboard.html" class="logo">
+        <div class="logo-icon">🚆</div>
+        <div class="logo-text">Cargo<span>Share</span></div>
+      </a>
+      <div class="nav-links">
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="find-cargo.html" class="nav-link">Find Space</a>
+        <a href="my-bookings.html" class="nav-link">My Bookings</a>
+        <a href="track-cargo.html" class="nav-link active">Track Cargo</a>
+        <a href="notifications.html" class="nav-link">Notifications</a>
+      </div>
+      <div class="nav-actions">
+        <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-user-name">Trader</span></a>
+        <button class="btn btn-secondary btn-sm" data-logout>Logout</button>
+      </div>
+      <button class="nav-hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <h1>📍 Track Cargo</h1>
+    <p>Real-time cargo tracking from loading to delivery</p>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Search Bar -->
+  <div class="track-search-bar animate-fade-up">
+    <div class="form-group">
+      <label class="form-label">Booking ID or Tracking Number</label>
+      <div class="form-icon-wrap">
+        <span class="form-icon">🔍</span>
+        <input type="text" id="trackInput" class="form-input" placeholder="e.g. CS10245" style="padding-left:42px">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="searchTrack()">Track →</button>
+  </div>
+
+  <div id="trackResult">
+    <div class="empty-state animate-fade-up delay-200">
+      <div class="empty-icon">📦</div>
+      <div class="empty-title">Enter a Booking ID to Track</div>
+      <div class="empty-desc">Enter your CargoShare booking ID (e.g. CS10245) to see real-time tracking status</div>
+    </div>
+  </div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+const TRACKING_STEPS = Utils.TRACKING_STEPS;
+
+const STEP_TIMES = {
+  booking_confirmed: '2026-08-25 10:30',
+  cargo_submitted:   '2026-08-31 09:00',
+  cargo_loaded:      '2026-09-01 16:00',
+  in_transit:        '2026-09-01 18:30',
+  arrived:           '2026-09-01 23:15',
+  delivered:         '2026-09-02 08:00'
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  Auth.requireTrader();
+
+  // Check URL param
+  const params    = new URLSearchParams(window.location.search);
+  const bookingId = params.get('id');
+  if (bookingId) {
+    const booking = DemoData.findBooking(bookingId);
+    if (booking) {
+      document.getElementById('trackInput').value = booking.bookingId;
+      renderTracking(booking);
+    }
+  }
+});
+
+function searchTrack() {
+  const val = document.getElementById('trackInput').value.trim();
+  if (!val) { Utils.toast('Enter a booking ID', 'warning'); return; }
+  const booking = DemoData.getBookings().find(b => b.bookingId === val || b.id === val);
+  if (!booking) {
+    document.getElementById('trackResult').innerHTML = `
+      <div class="alert alert-error animate-scale-in">
+        <span class="alert-icon">❌</span>
+        <div class="alert-body">Booking ID <strong>${val}</strong> not found. Try CS10245 or CS10246.</div>
+      </div>`;
+    return;
+  }
+  renderTracking(booking);
+}
+
+function renderTracking(booking) {
+  const currentIdx = Utils.getStepIndex(booking.trackingStatus);
+  const pct        = Math.round(((currentIdx + 1) / TRACKING_STEPS.length) * 100);
+  const currentStep= TRACKING_STEPS[currentIdx] || TRACKING_STEPS[0];
+
+  document.getElementById('trackResult').innerHTML = `
+    <div class="track-layout">
+      <div>
+        <div class="track-info-card animate-fade-up">
+          <div class="tic-header">
+            <div>
+              <div class="tic-train">🚆 ${booking.trainNumber} – ${booking.trainName}</div>
+              <div class="tic-sub">Booking ID: ${booking.bookingId}</div>
+            </div>
+            <span class="badge badge-${booking.status === 'delivered' ? 'delivered' : 'transit'}">${currentStep.icon} ${currentStep.label}</span>
+          </div>
+          <div class="tic-body">
+            <div class="tic-route">
+              <div class="tic-city">
+                <div class="tic-city-label">Origin</div>
+                <div class="tic-city-name">${booking.source}</div>
+                <div class="tic-city-time">${booking.departureTime}</div>
+              </div>
+              <div style="flex:1;position:relative">
+                <div class="tic-track-line">
+                  <div class="tic-track-train" style="left:${pct}%">🚆</div>
+                </div>
+              </div>
+              <div class="tic-city" style="text-align:right">
+                <div class="tic-city-label">Destination</div>
+                <div class="tic-city-name">${booking.destination}</div>
+                <div class="tic-city-time">${booking.arrivalTime}</div>
+              </div>
+            </div>
+            <div class="tic-meta-row">
+              <div class="tic-meta-item"><label>Cargo</label><span>${booking.cargoType}</span></div>
+              <div class="tic-meta-item"><label>Weight</label><span>${booking.weight} kg</span></div>
+              <div class="tic-meta-item"><label>Amount Paid</label><span style="color:var(--primary)">${Utils.formatCurrency(booking.price?.total || 0)}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-card animate-fade-up delay-100">
+          <h3>🛤️ Tracking Timeline</h3>
+          <div class="tracking-timeline">
+            ${TRACKING_STEPS.map((step, i) => {
+              const state = i < currentIdx ? 'done' : i === currentIdx ? 'active' : 'pending';
+              const time  = i <= currentIdx ? (STEP_TIMES[step.key] || '') : '';
+              return `
+                <div class="tracking-event ${state}">
+                  <div class="tracking-dot"></div>
+                  <div class="tracking-icon">${step.icon}</div>
+                  <div class="tracking-title">${step.label}</div>
+                  <div class="tracking-desc">${step.desc}</div>
+                  ${time ? `<div class="tracking-time">📅 ${time}</div>` : ''}
+                </div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="status-card animate-fade-up delay-200">
+          <div class="status-card-header"><h3>📍 Current Status</h3></div>
+          <div class="status-card-body" style="text-align:center">
+            <div class="current-status-icon">${currentStep.icon}</div>
+            <div class="current-status-text">${currentStep.label}</div>
+            <div class="current-status-desc">${currentStep.desc}</div>
+            <div class="status-progress" style="margin-top:var(--space-5)">
+              <div class="status-progress-bar-track">
+                <div class="status-progress-fill" style="width:${pct}%"></div>
+              </div>
+              <div class="status-progress-label">
+                <span>Booked</span>
+                <span>${pct}% complete</span>
+                <span>Delivered</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card animate-fade-up delay-300">
+          <div class="card-body">
+            <h3 style="font-size:0.95rem;font-weight:800;margin-bottom:var(--space-4)">📦 Cargo Details</h3>
+            <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+              <div class="bs-row" style="display:flex;justify-content:space-between;font-size:0.88rem;padding:var(--space-2) 0;border-bottom:1px solid var(--border)">
+                <span style="color:var(--text-muted)">Cargo Name</span>
+                <span style="font-weight:600">${booking.cargoName}</span>
+              </div>
+              <div class="bs-row" style="display:flex;justify-content:space-between;font-size:0.88rem;padding:var(--space-2) 0;border-bottom:1px solid var(--border)">
+                <span style="color:var(--text-muted)">Sender</span>
+                <span style="font-weight:600;text-align:right">${booking.senderDetails?.name || '—'}</span>
+              </div>
+              <div class="bs-row" style="display:flex;justify-content:space-between;font-size:0.88rem;padding:var(--space-2) 0;border-bottom:1px solid var(--border)">
+                <span style="color:var(--text-muted)">Receiver</span>
+                <span style="font-weight:600;text-align:right">${booking.receiverDetails?.name || '—'}</span>
+              </div>
+              <div class="bs-row" style="display:flex;justify-content:space-between;font-size:0.88rem;padding:var(--space-2) 0">
+                <span style="color:var(--text-muted)">Packages</span>
+                <span style="font-weight:600">${booking.packageCount}</span>
+              </div>
+            </div>
+            <a href="booking-confirm.html?id=${booking.id}" class="btn btn-ghost w-full" style="margin-top:var(--space-4)">🎫 View Ticket</a>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>

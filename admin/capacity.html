@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capacity Management – CargoShare Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <style>
+    .cap-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 18px; }
+    .cap-train-card { background: white; border: 1px solid var(--a-border); border-radius: var(--a-radius); overflow: hidden; box-shadow: var(--a-shadow); transition: var(--a-tr); }
+    .cap-train-card:hover { border-color: var(--a-primary); box-shadow: var(--a-shadow2); }
+    .cap-header { padding: 16px 20px; border-bottom: 1px solid var(--a-border); background: var(--a-bg); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .cap-train-num  { font-size: 1rem; font-weight: 900; color: var(--a-primary); }
+    .cap-train-name { font-size: 0.78rem; color: var(--a-muted); margin-top: 3px; }
+    .cap-body { padding: 20px; }
+    .cap-numbers { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 16px; }
+    .cap-num-item label { display: block; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--a-muted); margin-bottom: 5px; }
+    .cap-num-item span  { font-size: 1.1rem; font-weight: 800; }
+    .cap-update-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--a-border); }
+    .cap-update-row label { font-size: 0.78rem; font-weight: 600; color: var(--a-text2); white-space: nowrap; }
+    .cap-update-row input { flex: 1; padding: 9px 12px; border: 1px solid var(--a-border); border-radius: 8px; font-family: 'Outfit',sans-serif; font-size: 0.9rem; outline: none; transition: var(--a-tr); background: var(--a-bg); }
+    .cap-update-row input:focus { border-color: var(--a-primary); box-shadow: 0 0 0 3px rgba(232,80,10,0.1); }
+    @media (max-width:900px) { .cap-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body class="admin-body">
+<div class="admin-wrapper">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-logo">
+      <div class="admin-sidebar-logo-icon">🚆</div>
+      <div><div class="admin-sidebar-logo-text">CargoShare</div><div class="admin-sidebar-logo-sub">Admin Portal</div></div>
+    </div>
+    <div class="admin-portal-badge">🛡️ Restricted Access</div>
+    <nav class="admin-sidebar-nav">
+      <div class="admin-nav-section">
+        <div class="admin-nav-label">Overview</div>
+        <a href="dashboard.html" class="admin-nav-link"><span class="admin-nav-icon">📊</span> Dashboard</a>
+      </div>
+      <div class="admin-nav-section">
+        <div class="admin-nav-label">Management</div>
+        <a href="trains.html"   class="admin-nav-link"><span class="admin-nav-icon">🚆</span> Trains</a>
+        <a href="capacity.html" class="admin-nav-link active"><span class="admin-nav-icon">📦</span> Capacity</a>
+        <a href="bookings.html" class="admin-nav-link"><span class="admin-nav-icon">🎫</span> Bookings</a>
+        <a href="traders.html"  class="admin-nav-link"><span class="admin-nav-icon">👥</span> Traders</a>
+      </div>
+      <div class="admin-nav-section">
+        <div class="admin-nav-label">Analytics</div>
+        <a href="reports.html"  class="admin-nav-link"><span class="admin-nav-icon">📈</span> Reports</a>
+      </div>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div class="admin-user-info">
+        <div class="admin-avatar" id="adminAvatarEl">A</div>
+        <div><div class="admin-user-name" id="adminNameEl">Admin</div><div class="admin-user-role">System Administrator</div></div>
+      </div>
+      <button class="btn-admin-ghost" style="width:100%;justify-content:center" data-logout>🚪 Logout</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="admin-menu-toggle" onclick="document.getElementById('adminSidebar').classList.toggle('open')">☰</button>
+        <div class="admin-topbar-title"><h1>Capacity Management</h1><p>Update cargo capacity in real-time</p></div>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <!-- Summary stats -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+        <div class="admin-stat-card" data-icon="📦"><div class="admin-stat-value" id="sTotal">–</div><div class="admin-stat-label">Total System Capacity</div></div>
+        <div class="admin-stat-card" data-icon="✅"><div class="admin-stat-value" id="sAvail">–</div><div class="admin-stat-label">Available Capacity</div></div>
+        <div class="admin-stat-card" data-icon="🎫"><div class="admin-stat-value" id="sBooked">–</div><div class="admin-stat-label">Booked Capacity</div></div>
+      </div>
+
+      <div class="cap-grid" id="capacityGrid"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/firebase-config.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  Auth.requireAdmin();
+  const a = Auth.getCurrentUser();
+  document.getElementById('adminNameEl').textContent   = a?.name || 'Admin';
+  document.getElementById('adminAvatarEl').textContent = (a?.name || 'A')[0].toUpperCase();
+  renderCapacity();
+});
+
+function renderCapacity() {
+  const trains    = DemoData.getTrains();
+  const totalCap  = trains.reduce((s,t) => s + t.totalCapacity, 0);
+  const totalAvail= trains.reduce((s,t) => s + t.availableCapacity, 0);
+  document.getElementById('sTotal').textContent  = Utils.formatWeight(totalCap);
+  document.getElementById('sAvail').textContent  = Utils.formatWeight(totalAvail);
+  document.getElementById('sBooked').textContent = Utils.formatWeight(totalCap - totalAvail);
+
+  const grid = document.getElementById('capacityGrid');
+  grid.innerHTML = '';
+
+  trains.forEach(t => {
+    const pct    = Utils.occupancyPercent(t.availableCapacity, t.totalCapacity);
+    const avPct  = Utils.availablePercent(t.availableCapacity, t.totalCapacity);
+    const cls    = pct >= 80 ? 'high' : pct >= 50 ? 'medium' : 'low';
+    const status = Utils.getCapacityStatus(t.availableCapacity, t.totalCapacity);
+
+    const card = document.createElement('div');
+    card.className = 'cap-train-card';
+    card.innerHTML = `
+      <div class="cap-header">
+        <div>
+          <div class="cap-train-num">🚆 ${t.trainNumber} – ${t.trainName}</div>
+          <div class="cap-train-name">${t.source} → ${t.destination} · ${t.departureTime}</div>
+        </div>
+        <span class="admin-badge ${t.availableCapacity===0?'admin-badge-inactive':pct>=70?'admin-badge-pending':'admin-badge-active'}">${status.dot} ${status.label}</span>
+      </div>
+      <div class="cap-body">
+        <div class="cap-numbers">
+          <div class="cap-num-item"><label>Total</label><span>${Utils.formatWeight(t.totalCapacity)}</span></div>
+          <div class="cap-num-item"><label>Booked</label><span style="color:var(--a-red)">${Utils.formatWeight(t.totalCapacity - t.availableCapacity)}</span></div>
+          <div class="cap-num-item"><label>Available</label><span style="color:var(--a-green)">${Utils.formatWeight(t.availableCapacity)}</span></div>
+        </div>
+        <div style="margin-bottom:6px;display:flex;justify-content:space-between;font-size:0.75rem;color:var(--a-muted)">
+          <span>${pct}% Occupied</span>
+          <span>${avPct}% Available</span>
+        </div>
+        <div class="admin-capacity-track" style="height:14px">
+          <div class="admin-capacity-fill ${cls}" style="width:${pct}%"></div>
+        </div>
+        <div class="cap-update-row">
+          <label>Update Available (kg):</label>
+          <input type="number" id="cap_${t.id}" value="${t.availableCapacity}" min="0" max="${t.totalCapacity}">
+          <button class="btn-admin-primary btn-admin-sm" onclick="updateCapacity('${t.id}',${t.totalCapacity})">Update</button>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function updateCapacity(trainId, totalCap) {
+  const val = parseInt(document.getElementById('cap_' + trainId).value);
+  if (isNaN(val) || val < 0) { Utils.toast('Enter a valid number','warning'); return; }
+  if (val > totalCap) { Utils.toast(`Cannot exceed total capacity (${totalCap} kg)`,'error'); return; }
+  DemoData.updateTrainCapacity(trainId, val);
+  Utils.toast('Capacity updated! Traders can see this change immediately.','success');
+  renderCapacity();
+}
+</script>
+</body>
+</html>

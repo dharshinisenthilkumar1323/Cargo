@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Bookings – CargoShare</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <style>
+    .booking-card {
+      background: white;
+      border-radius: var(--radius-xl);
+      border: 2px solid var(--border);
+      overflow: hidden;
+      margin-bottom: var(--space-4);
+      transition: all var(--transition);
+    }
+    .booking-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); }
+
+    .bc-header {
+      background: linear-gradient(135deg, #1A1A2E 0%, #2D2D4E 100%);
+      padding: var(--space-4) var(--space-5);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+
+    .bc-train { font-size: 1rem; font-weight: 800; }
+    .bc-train-name { font-size: 0.75rem; opacity: 0.65; margin-top: 2px; }
+
+    .bc-body {
+      padding: var(--space-5);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-4);
+      align-items: center;
+    }
+
+    .bc-route {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+
+    .bc-city {
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .bc-arrow {
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+
+    .bc-meta {
+      display: flex;
+      gap: var(--space-5);
+      flex-wrap: wrap;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .bc-meta span { display: flex; align-items: center; gap: 5px; font-weight: 500; }
+
+    .bc-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+
+    .bc-booking-id {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 640px) {
+      .bc-body { grid-template-columns: 1fr; }
+      .bc-actions { flex-direction: row; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="demo-banner">🚂 Demo Railway Network – Cargo capacity data managed by CargoShare Admin Portal</div>
+
+<nav class="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="dashboard.html" class="logo">
+        <div class="logo-icon">🚆</div>
+        <div class="logo-text">Cargo<span>Share</span></div>
+      </a>
+      <div class="nav-links">
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="find-cargo.html" class="nav-link">Find Space</a>
+        <a href="my-bookings.html" class="nav-link active">My Bookings</a>
+        <a href="track-cargo.html" class="nav-link">Track Cargo</a>
+        <a href="notifications.html" class="nav-link">Notifications</a>
+      </div>
+      <div class="nav-actions">
+        <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-user-name">Trader</span></a>
+        <button class="btn btn-secondary btn-sm" data-logout>Logout</button>
+      </div>
+      <button class="nav-hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <h1>My Bookings</h1>
+    <p>Track and manage all your cargo bookings</p>
+  </div>
+</div>
+
+<div class="container" style="padding-top:var(--space-8);padding-bottom:var(--space-12)">
+  <!-- Tabs -->
+  <div class="tabs animate-fade-up">
+    <button class="tab-btn active" id="tabAll"       onclick="filterBookings('all')">All Bookings</button>
+    <button class="tab-btn"        id="tabUpcoming"  onclick="filterBookings('upcoming')">🟡 Upcoming</button>
+    <button class="tab-btn"        id="tabActive"    onclick="filterBookings('active')">🚆 Active</button>
+    <button class="tab-btn"        id="tabCompleted" onclick="filterBookings('completed')">✅ Completed</button>
+    <button class="tab-btn"        id="tabCancelled" onclick="filterBookings('cancelled')">❌ Cancelled</button>
+  </div>
+
+  <div id="bookingsList" class="animate-fade-up delay-100"></div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let allBookings = [];
+let activeTab   = 'all';
+
+document.addEventListener('DOMContentLoaded', () => {
+  Auth.requireTrader();
+  const user    = Auth.getCurrentUser();
+  allBookings   = DemoData.getBookings().filter(b => b.userId === user.id || b.userId === 'trader_001');
+  filterBookings('all');
+});
+
+function filterBookings(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1))?.classList.add('active');
+
+  let filtered = allBookings;
+  if (tab === 'upcoming')  filtered = allBookings.filter(b => b.trackingStatus === 'booking_confirmed' || b.trackingStatus === 'cargo_submitted');
+  if (tab === 'active')    filtered = allBookings.filter(b => ['cargo_loaded','in_transit','arrived'].includes(b.trackingStatus));
+  if (tab === 'completed') filtered = allBookings.filter(b => b.trackingStatus === 'delivered' || b.status === 'delivered');
+  if (tab === 'cancelled') filtered = allBookings.filter(b => b.status === 'cancelled');
+
+  renderBookings(filtered);
+}
+
+function renderBookings(bookings) {
+  const el = document.getElementById('bookingsList');
+
+  if (bookings.length === 0) {
+    el.innerHTML = `<div class="empty-state animate-scale-in">
+      <div class="empty-icon">📦</div>
+      <div class="empty-title">No bookings found</div>
+      <div class="empty-desc">No bookings in this category. Ready to ship something?</div>
+      <a href="find-cargo.html" class="btn btn-primary">+ Find Cargo Space</a>
+    </div>`;
+    return;
+  }
+
+  const statusMap = {
+    confirmed:       { badge: 'badge-confirmed', label: 'Confirmed',     icon: '🟢' },
+    cargo_submitted: { badge: 'badge-pending',   label: 'Cargo Submitted',icon: '🏭' },
+    cargo_loaded:    { badge: 'badge-transit',   label: 'Loaded',         icon: '🚂' },
+    in_transit:      { badge: 'badge-transit',   label: 'In Transit',     icon: '🚆' },
+    arrived:         { badge: 'badge-transit',   label: 'Arrived',        icon: '📍' },
+    delivered:       { badge: 'badge-delivered', label: 'Delivered',      icon: '✅' },
+    cancelled:       { badge: 'badge-cancelled', label: 'Cancelled',      icon: '❌' }
+  };
+
+  el.innerHTML = '';
+  bookings.forEach((b, i) => {
+    const s    = statusMap[b.trackingStatus || b.status] || statusMap['confirmed'];
+    const card = document.createElement('div');
+    card.className = 'booking-card animate-fade-up';
+    card.style.animationDelay = (i * 0.07) + 's';
+    card.innerHTML = `
+      <div class="bc-header">
+        <div>
+          <div class="bc-train">🚆 ${b.trainNumber} – ${b.trainName}</div>
+          <div class="bc-train-name">Booking ID: ${b.bookingId}</div>
+        </div>
+        <span class="badge ${s.badge}">${s.icon} ${s.label}</span>
+      </div>
+      <div class="bc-body">
+        <div>
+          <div class="bc-route">
+            <span class="bc-city">${b.source}</span>
+            <span class="bc-arrow">→</span>
+            <span class="bc-city">${b.destination}</span>
+          </div>
+          <div class="bc-meta">
+            <span>📦 ${b.weight} kg ${b.cargoType}</span>
+            <span>📦 ${b.packageCount} packages</span>
+            <span>🕐 ${b.departureTime} – ${b.arrivalTime}</span>
+            <span>💰 ${Utils.formatCurrency(b.price?.total || 0)}</span>
+          </div>
+        </div>
+        <div class="bc-actions">
+          <div class="bc-booking-id">${b.bookingId}</div>
+          <a href="track-cargo.html?id=${b.id}" class="btn btn-primary btn-sm">📍 Track Cargo</a>
+          <button class="btn btn-ghost btn-sm" onclick="viewDetails('${b.id}')">View Details</button>
+        </div>
+      </div>`;
+    el.appendChild(card);
+  });
+}
+
+function viewDetails(id) {
+  const b = DemoData.findBooking(id);
+  if (!b) return;
+  // Simple modal-like detail view
+  Utils.toast(`Booking ${b.bookingId}: ${b.source} → ${b.destination} · ${b.weight}kg · ${Utils.formatCurrency(b.price?.total || 0)}`, 'info', 5000);
+}
+</script>
+</body>
+</html>

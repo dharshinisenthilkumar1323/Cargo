@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trader Dashboard – CargoShare</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <style>
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: var(--space-6);
+      align-items: start;
+    }
+
+    .greeting-card {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      color: white;
+      margin-bottom: var(--space-6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .greeting-card::before {
+      content: '🚆';
+      position: absolute;
+      font-size: 7rem;
+      opacity: 0.07;
+      right: var(--space-4);
+      bottom: -1rem;
+    }
+
+    .greeting-card h2 {
+      font-size: 1.625rem;
+      font-weight: 900;
+      margin-bottom: var(--space-2);
+    }
+
+    .greeting-card p {
+      opacity: 0.85;
+      font-size: 0.95rem;
+      margin-bottom: var(--space-6);
+    }
+
+    .network-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .network-card-header {
+      background: linear-gradient(135deg, #1A1A2E 0%, #2D2D4E 100%);
+      padding: var(--space-5) var(--space-6);
+      color: white;
+    }
+
+    .network-card-header h3 {
+      font-size: 1rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .network-card-header p {
+      font-size: 0.8rem;
+      opacity: 0.65;
+      margin-top: 3px;
+    }
+
+    .live-train-item {
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+
+    .live-train-item:last-child { border-bottom: none; }
+    .live-train-item:hover { background: var(--bg-muted); }
+
+    .live-train-route {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+
+    .live-train-num {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: var(--bg-muted);
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+    }
+
+    .live-train-cities {
+      font-weight: 700;
+      font-size: 0.95rem;
+      flex: 1;
+    }
+
+    .quick-book-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      padding: var(--space-6);
+      margin-bottom: var(--space-6);
+    }
+
+    .quick-book-card h3 {
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: var(--space-5);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .quick-form-field {
+      margin-bottom: var(--space-4);
+    }
+
+    .quick-form-field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
+    }
+
+    .quick-form-field select,
+    .quick-form-field input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--bg-card);
+      outline: none;
+      transition: all var(--transition);
+      appearance: none;
+    }
+
+    .quick-form-field select:focus,
+    .quick-form-field input:focus {
+      border-color: var(--primary);
+    }
+
+    .recent-bookings-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .recent-booking-item {
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: var(--space-4);
+      align-items: flex-start;
+    }
+
+    .recent-booking-item:last-child { border-bottom: none; }
+
+    .rbi-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-md);
+      background: var(--primary-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="demo-banner">
+  🚂 Demo Railway Network – Train and cargo capacity data managed by CargoShare Admin Portal
+</div>
+
+<!-- Navigation -->
+<nav class="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="dashboard.html" class="logo">
+        <div class="logo-icon">🚆</div>
+        <div class="logo-text">Cargo<span>Share</span></div>
+      </a>
+      <div class="nav-links">
+        <a href="dashboard.html" class="nav-link active">Dashboard</a>
+        <a href="find-cargo.html" class="nav-link">Find Space</a>
+        <a href="my-bookings.html" class="nav-link">My Bookings</a>
+        <a href="track-cargo.html" class="nav-link">Track Cargo</a>
+        <a href="notifications.html" class="nav-link">Notifications <span id="navNotifBadge" class="badge badge-full" style="padding:1px 6px;font-size:0.68rem"></span></a>
+      </div>
+      <div class="nav-actions">
+        <a href="profile.html" class="btn btn-ghost btn-sm" id="navProfileBtn">👤 <span class="nav-user-name">Trader</span></a>
+        <button class="btn btn-secondary btn-sm" data-logout>Logout</button>
+      </div>
+      <button class="nav-hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="container" style="padding-top:var(--space-8);padding-bottom:var(--space-12)">
+    <!-- Greeting -->
+    <div class="greeting-card animate-fade-up">
+      <h2 id="greetingText">Good Morning 👋 Ready to move your cargo?</h2>
+      <p id="greetingName">Welcome back! Here's your cargo overview for today.</p>
+      <a href="find-cargo.html" class="btn btn-white" style="background:white;color:var(--primary);font-weight:700;padding:12px 24px;border-radius:var(--radius-full);display:inline-flex;align-items:center;gap:8px">
+        + Find Cargo Space
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid-4 animate-fade-up delay-100" style="margin-bottom:var(--space-6)">
+      <div class="stat-card">
+        <div class="stat-icon">🚆</div>
+        <div class="stat-value" id="statActive">2</div>
+        <div class="stat-label">Active Shipments</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-value" id="statUpcoming">2</div>
+        <div class="stat-label">Upcoming Bookings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value" id="statCompleted">1</div>
+        <div class="stat-label">Completed Shipments</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-value" id="statTotal">530<small style="font-size:1rem"> kg</small></div>
+        <div class="stat-label">Total Cargo Shipped</div>
+      </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="dashboard-layout">
+      <!-- Left -->
+      <div>
+        <!-- Live Network -->
+        <div class="network-card animate-fade-up delay-200" style="margin-bottom:var(--space-6)">
+          <div class="network-card-header">
+            <h3>🛤️ Live Cargo Network</h3>
+            <p>Real-time capacity across available trains</p>
+          </div>
+          <div id="networkList">
+            <div class="loader-overlay" style="padding:var(--space-8)">
+              <div class="spinner"></div>
+              <div class="loader-text">Loading live trains…</div>
+            </div>
+          </div>
+          <div style="padding:var(--space-4) var(--space-6);border-top:1px solid var(--border)">
+            <a href="find-cargo.html" class="btn btn-primary w-full">🔍 Search All Available Trains</a>
+          </div>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div class="recent-bookings-card animate-fade-up delay-300">
+          <div class="card-header">
+            <h3 style="font-size:1rem;font-weight:800">📋 Recent Bookings</h3>
+            <a href="my-bookings.html" class="btn btn-ghost btn-sm">View All →</a>
+          </div>
+          <div id="recentBookingsList"></div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar -->
+      <div>
+        <!-- Quick Search -->
+        <div class="quick-book-card animate-fade-up delay-200">
+          <h3>⚡ Quick Search</h3>
+          <form id="quickSearchForm">
+            <div class="quick-form-field">
+              <label>From</label>
+              <select id="qFrom">
+                <option value="">Any City</option>
+                <option>Chennai</option>
+                <option>Bengaluru</option>
+                <option>Hyderabad</option>
+                <option>Coimbatore</option>
+                <option>Madurai</option>
+              </select>
+            </div>
+            <div class="quick-form-field">
+              <label>To</label>
+              <select id="qTo">
+                <option value="">Any City</option>
+                <option>Coimbatore</option>
+                <option>Chennai</option>
+                <option>Madurai</option>
+                <option>Bengaluru</option>
+              </select>
+            </div>
+            <div class="quick-form-field">
+              <label>Cargo Weight (kg)</label>
+              <input type="number" id="qWeight" placeholder="e.g. 300" min="1">
+            </div>
+            <button type="submit" class="btn btn-primary w-full">🔍 Search Trains</button>
+          </form>
+        </div>
+
+        <!-- Unread Notifications -->
+        <div class="card animate-fade-up delay-300">
+          <div class="card-header">
+            <h3 style="font-size:0.95rem;font-weight:800">🔔 Recent Alerts</h3>
+            <a href="notifications.html" class="btn btn-ghost btn-sm" style="font-size:0.78rem">See All</a>
+          </div>
+          <div id="miniNotifList" style="max-height:280px;overflow:hidden"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (!Auth.requireTrader()) return;
+
+  const user = Auth.getCurrentUser();
+
+  // Greeting
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+  document.getElementById('greetingText').textContent = `${greet} 👋 Ready to move your cargo?`;
+  document.getElementById('greetingName').textContent = `Welcome back, ${user.name?.split(' ')[0] || 'Trader'}! Here's your cargo overview for today.`;
+
+  // Stats from bookings
+  const bookings = DemoData.getBookings().filter(b => b.userId === user.id || b.userId === 'trader_001');
+  const active    = bookings.filter(b => ['confirmed','cargo_loaded','in_transit'].includes(b.status)).length;
+  const completed = bookings.filter(b => b.status === 'delivered').length;
+  let totalKg = 0;
+  bookings.forEach(b => totalKg += (b.weight || 0));
+  document.getElementById('statActive').textContent    = active;
+  document.getElementById('statUpcoming').textContent  = active;
+  document.getElementById('statCompleted').textContent = completed;
+  document.getElementById('statTotal').innerHTML       = totalKg + '<small style="font-size:1rem"> kg</small>';
+
+  // Unread notif badge
+  const notifs = DemoData.getNotifs(user.id || 'trader_001');
+  const unread = notifs.filter(n => !n.read).length;
+  const badge  = document.getElementById('navNotifBadge');
+  if (unread > 0) badge.textContent = unread;
+  else badge.style.display = 'none';
+
+  // Live Network List
+  setTimeout(() => {
+    const trains  = DemoData.getTrains().slice(0, 5);
+    const listEl  = document.getElementById('networkList');
+    listEl.innerHTML = '';
+    trains.forEach(t => {
+      const status = Utils.getCapacityStatus(t.availableCapacity, t.totalCapacity);
+      const pct    = Utils.occupancyPercent(t.availableCapacity, t.totalCapacity);
+      listEl.innerHTML += `
+        <div class="live-train-item" onclick="window.location.href='train-details.html?id=${t.id}'">
+          <div class="live-train-route">
+            <span class="live-train-num">🚆 ${t.trainNumber}</span>
+            <span class="live-train-cities">${t.source} → ${t.destination}</span>
+            <span class="badge ${status.badge}">${status.dot} ${status.label}</span>
+          </div>
+          <div class="capacity-bar-wrap" style="margin:0">
+            <div class="capacity-bar-header">
+              <span class="capacity-bar-label text-sm">${Utils.formatWeight(t.availableCapacity)} available</span>
+              <span class="capacity-bar-value text-xs">${pct}% occupied</span>
+            </div>
+            <div class="capacity-bar-track">
+              <div class="capacity-bar-fill ${status.cls}" data-width="${pct}%"></div>
+            </div>
+          </div>
+        </div>`;
+    });
+    Utils.animateCapacityBars();
+  }, 600);
+
+  // Recent Bookings
+  const rbList = document.getElementById('recentBookingsList');
+  const myBookings = bookings.slice(0, 3);
+  if (myBookings.length === 0) {
+    rbList.innerHTML = `<div class="empty-state" style="padding:var(--space-8)">
+      <div class="empty-icon">📦</div>
+      <div class="empty-title">No bookings yet</div>
+      <div class="empty-desc">Search for available trains and make your first cargo booking!</div>
+    </div>`;
+  } else {
+    myBookings.forEach(b => {
+      const icons = { confirmed:'🟢', cargo_loaded:'🚆', in_transit:'🚆', arrived:'📍', delivered:'✅', cancelled:'❌' };
+      rbList.innerHTML += `
+        <div class="recent-booking-item">
+          <div class="rbi-icon">${icons[b.status] || '📦'}</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:0.92rem">${b.source} → ${b.destination}</div>
+            <div class="text-sm text-secondary">Train ${b.trainNumber} · ${b.weight} kg ${b.cargoType}</div>
+            <div class="text-xs text-muted" style="margin-top:3px">${b.bookingId}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="badge badge-${b.status==='delivered'?'confirmed':b.status==='cancelled'?'cancelled':'transit'}" style="font-size:0.7rem">${b.status.replace('_',' ')}</div>
+            <a href="track-cargo.html?id=${b.id}" class="btn btn-ghost btn-sm" style="margin-top:6px;padding:4px 10px;font-size:0.75rem">Track</a>
+          </div>
+        </div>`;
+    });
+  }
+
+  // Mini Notifications
+  const miniList = document.getElementById('miniNotifList');
+  const recentNotifs = notifs.slice(0, 3);
+  if (recentNotifs.length === 0) {
+    miniList.innerHTML = '<div style="padding:var(--space-5);text-align:center;font-size:0.85rem;color:var(--text-muted)">No notifications yet</div>';
+  } else {
+    recentNotifs.forEach(n => {
+      miniList.innerHTML += `
+        <div class="notif-item ${n.read?'':'unread'}">
+          <div class="notif-icon">🔔</div>
+          <div class="notif-content">
+            <div class="notif-title">${n.title}</div>
+            <div class="notif-time">${Utils.timeAgo(n.createdAt)}</div>
+          </div>
+        </div>`;
+    });
+  }
+
+  // Quick Search
+  document.getElementById('quickSearchForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const from   = document.getElementById('qFrom').value;
+    const to     = document.getElementById('qTo').value;
+    const weight = document.getElementById('qWeight').value;
+    const params = new URLSearchParams({ from, to, weight });
+    window.location.href = 'search-results.html?' + params.toString();
+  });
+});
+</script>
+</body>
+</html>

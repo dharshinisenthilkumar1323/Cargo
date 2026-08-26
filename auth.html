@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login – CargoShare</title>
+  <meta name="description" content="Login to CargoShare as a Trader or Admin to manage railway cargo bookings.">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #FFF8F3 0%, #F8F5F0 60%, #F0EBE0 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-6);
+    }
+
+    .auth-logo {
+      text-align: center;
+      margin-bottom: var(--space-8);
+      animation: fade-in-up 0.5s ease both;
+    }
+
+    .auth-logo a {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .auth-logo-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--primary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .auth-logo span { color: var(--primary); }
+
+    .auth-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: var(--space-2);
+      text-align: center;
+    }
+
+    .auth-sub {
+      text-align: center;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-8);
+      font-size: 0.95rem;
+    }
+
+    .role-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-5);
+      max-width: 680px;
+      width: 100%;
+      animation: fade-in-up 0.6s ease 0.1s both;
+    }
+
+    .role-card {
+      background: white;
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      border: 2px solid var(--border);
+      text-align: center;
+      cursor: default;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .role-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+    }
+
+    .role-card.trader::before { background: linear-gradient(90deg, var(--primary), var(--accent)); }
+    .role-card.admin::before  { background: linear-gradient(90deg, #1E293B, #475569); }
+
+    .role-card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-4px);
+    }
+
+    .role-icon {
+      font-size: 3.5rem;
+      margin-bottom: var(--space-4);
+    }
+
+    .role-title {
+      font-size: 1.375rem;
+      font-weight: 900;
+      margin-bottom: var(--space-2);
+    }
+
+    .role-desc {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-6);
+      line-height: 1.6;
+      min-height: 52px;
+    }
+
+    .role-btns { display: flex; flex-direction: column; gap: var(--space-3); }
+
+    .role-restricted {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-top: var(--space-3);
+    }
+
+    .divider-text {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: var(--space-6);
+      animation: fade-in 0.6s ease 0.3s both;
+    }
+
+    @media (max-width: 600px) {
+      .role-grid { grid-template-columns: 1fr; max-width: 380px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-logo">
+  <a href="index.html">
+    <div class="auth-logo-icon">🚆</div>
+    Cargo<span>Share</span>
+  </a>
+</div>
+
+<h1 class="auth-title">Welcome Back!</h1>
+<p class="auth-sub">Choose how you'd like to access CargoShare</p>
+
+<div class="role-grid">
+  <!-- Trader Card -->
+  <div class="role-card trader">
+    <div class="role-icon">👤</div>
+    <div class="role-title">Trader</div>
+    <p class="role-desc">Find & Book available cargo space on trains. Track your shipments.</p>
+    <div class="role-btns">
+      <a href="login.html" class="btn btn-primary">Trader Login</a>
+      <a href="login.html" class="btn btn-secondary">Register as Trader</a>
+    </div>
+  </div>
+
+  <!-- Admin Card -->
+  <div class="role-card admin">
+    <div class="role-icon">🛡️</div>
+    <div class="role-title">Admin</div>
+    <p class="role-desc">Manage trains, cargo capacity, bookings and the CargoShare network.</p>
+    <div class="role-btns">
+      <a href="login.html" class="btn btn-ghost">Admin Login</a>
+    </div>
+    <p class="role-restricted">Admin access is restricted to authorized personnel only.</p>
+  </div>
+</div>
+
+<div class="divider-text">
+  <a href="index.html" style="color:var(--primary);font-weight:600">← Back to Home</a>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  // If already logged in, redirect
+  document.addEventListener('DOMContentLoaded', () => {
+    const session = Auth.getSession();
+    if (session?.role === 'trader') window.location.href = 'dashboard.html';
+    if (session?.role === 'admin')  window.location.href = 'admin/dashboard.html';
+  });
+</script>
+</body>
+</html>

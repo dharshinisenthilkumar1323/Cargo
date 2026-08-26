@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Results – CargoShare</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <style>
+    .results-header {
+      background: linear-gradient(135deg, #1A1A2E 0%, #2D2D4E 100%);
+      padding: var(--space-8) 0;
+      color: white;
+    }
+
+    .results-header h1 { font-size: 1.625rem; font-weight: 800; margin-bottom: var(--space-2); }
+    .results-header p  { opacity: 0.7; font-size: 0.9rem; }
+
+    .results-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4) 0;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: var(--space-6);
+    }
+
+    .results-count {
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .sort-select {
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      font-family: inherit;
+      background: white;
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* ─── Train Result Card ───────────── */
+    .train-result-card {
+      background: white;
+      border-radius: var(--radius-xl);
+      border: 2px solid var(--border);
+      overflow: hidden;
+      margin-bottom: var(--space-4);
+      transition: all var(--transition);
+    }
+
+    .train-result-card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .train-result-card.full { opacity: 0.7; }
+    .train-result-card.full:hover { border-color: var(--status-full); transform: none; }
+
+    .trc-header {
+      background: linear-gradient(135deg, #1A1A2E 0%, #2D2D4E 100%);
+      padding: var(--space-4) var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: white;
+    }
+
+    .trc-train-info h3 {
+      font-size: 1.125rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .trc-train-info p {
+      font-size: 0.78rem;
+      opacity: 0.65;
+      margin-top: 2px;
+    }
+
+    .trc-body {
+      padding: var(--space-5) var(--space-6);
+    }
+
+    .trc-route {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+      margin-bottom: var(--space-4);
+    }
+
+    .trc-station {
+      min-width: 100px;
+    }
+
+    .trc-time {
+      font-size: 1.625rem;
+      font-weight: 900;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .trc-city {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+
+    .trc-line {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .trc-track {
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .trc-track::before {
+      content: '🚆';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1rem;
+      background: white;
+      padding: 0 4px;
+    }
+
+    .trc-duration { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+
+    .trc-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4) var(--space-6);
+      border-top: 1px solid var(--border);
+      background: var(--bg-muted);
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+
+    .trc-price {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .trc-price strong {
+      font-size: 1.1rem;
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .trc-actions {
+      display: flex;
+      gap: var(--space-3);
+    }
+
+    /* Full state */
+    .full-overlay-msg {
+      text-align: center;
+      padding: var(--space-4);
+      background: var(--status-full-bg);
+      border-top: 1px solid #FCA5A5;
+      color: var(--status-full);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    /* No results */
+    .no-results {
+      text-align: center;
+      padding: var(--space-16) var(--space-6);
+    }
+
+    .no-results-emoji { font-size: 5rem; margin-bottom: var(--space-4); animation: float 3s ease-in-out infinite; }
+    .no-results h2    { font-size: 1.75rem; font-weight: 900; margin-bottom: var(--space-3); }
+    .no-results p     { color: var(--text-secondary); margin-bottom: var(--space-8); max-width: 440px; margin-left: auto; margin-right: auto; }
+
+    .suggestions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-4);
+      max-width: 500px;
+      margin: 0 auto var(--space-6);
+    }
+
+    .suggestion-item {
+      background: var(--bg-muted);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    @media (max-width: 640px) {
+      .trc-route { gap: var(--space-3); }
+      .trc-time  { font-size: 1.25rem; }
+      .trc-footer { flex-direction: column; }
+      .trc-actions { width: 100%; }
+      .trc-actions .btn { flex: 1; }
+      .suggestions-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="demo-banner">🚂 Demo Railway Network – Cargo capacity data managed by CargoShare Admin Portal</div>
+
+<nav class="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="dashboard.html" class="logo">
+        <div class="logo-icon">🚆</div>
+        <div class="logo-text">Cargo<span>Share</span></div>
+      </a>
+      <div class="nav-links">
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="find-cargo.html" class="nav-link active">Find Space</a>
+        <a href="my-bookings.html" class="nav-link">My Bookings</a>
+        <a href="track-cargo.html" class="nav-link">Track Cargo</a>
+        <a href="notifications.html" class="nav-link">Notifications</a>
+      </div>
+      <div class="nav-actions">
+        <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-user-name">Trader</span></a>
+        <button class="btn btn-secondary btn-sm" data-logout>Logout</button>
+      </div>
+      <button class="nav-hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+
+<div class="results-header">
+  <div class="container">
+    <h1 id="resultsHeading">Searching trains…</h1>
+    <p id="resultsSubhead"></p>
+  </div>
+</div>
+
+<div class="container" style="padding-top:var(--space-6);padding-bottom:var(--space-12)">
+  <div class="results-toolbar">
+    <div class="results-count" id="resultsCount"></div>
+    <div style="display:flex;align-items:center;gap:var(--space-4)">
+      <select class="sort-select" id="sortSelect">
+        <option value="avail">Sort: Most Space First</option>
+        <option value="depart">Sort: Departure Time</option>
+        <option value="price">Sort: Price (Low–High)</option>
+      </select>
+      <a href="find-cargo.html" class="btn btn-ghost btn-sm">✏️ Modify Search</a>
+    </div>
+  </div>
+
+  <!-- Active filter chips -->
+  <div id="activeFilters" style="display:none;margin-bottom:var(--space-4);display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center">
+    <span style="font-size:0.78rem;font-weight:600;color:var(--text-secondary)">Active filters:</span>
+    <div id="timeChip"></div>
+  </div>
+
+  <div id="resultsList"></div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  Auth.requireTrader();
+
+  const params  = new URLSearchParams(window.location.search);
+  const from    = params.get('from')   || '';
+  const to      = params.get('to')     || '';
+  const date    = params.get('date')   || '';
+  const type    = params.get('type')   || '';
+  const weight  = parseFloat(params.get('weight')) || 0;
+  const time    = params.get('time')   || '';
+
+  // Update header
+  const heading = document.getElementById('resultsHeading');
+  const subhead  = document.getElementById('resultsSubhead');
+  heading.textContent = from && to ? `${from} → ${to}` : 'All Available Trains';
+  subhead.textContent = [
+    date   && `Date: ${date}`,
+    time   && `🕐 From: ${time}`,
+    type   && `Goods: ${type}`,
+    weight && `Weight: ${weight} kg`
+  ].filter(Boolean).join(' · ') || 'All routes';
+
+  // Filter trains
+  let trains = DemoData.searchTrains(from, to, date, type, weight);
+
+  // Filter by departure time: show trains departing at or after selected time
+  if (time) {
+    const [selH, selM] = time.split(':').map(Number);
+    const selMins = selH * 60 + selM;
+    trains = trains.filter(t => {
+      if (!t.departureTime) return true;
+      const [tH, tM] = t.departureTime.split(':').map(Number);
+      return (tH * 60 + tM) >= selMins;
+    });
+
+    // Show removable chip
+    const chip = document.getElementById('timeChip');
+    const removeParams = new URLSearchParams({ from, to, date, type, weight: weight || '' });
+    chip.innerHTML = `<a href="search-results.html?${removeParams.toString()}"
+      style="display:inline-flex;align-items:center;gap:6px;background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.25);border-radius:20px;padding:4px 12px;font-size:0.78rem;font-weight:700;color:var(--primary);text-decoration:none;transition:all 0.2s"
+      title="Remove time filter">
+      🕐 After ${time} &nbsp;×
+    </a>`;
+    document.getElementById('activeFilters').style.display = 'flex';
+  }
+
+  function renderResults(list) {
+    const listEl  = document.getElementById('resultsList');
+    const countEl = document.getElementById('resultsCount');
+    countEl.textContent = `${list.length} train${list.length !== 1 ? 's' : ''} found`;
+
+    if (list.length === 0) {
+      // Build smart suggestion URLs
+      const halfWeight  = weight > 0 ? Math.max(50, Math.round(weight / 2)) : '';
+      const baseParams  = new URLSearchParams({ from, to, type, weight: weight||'', time: '' });
+      const halfWeightParams = new URLSearchParams({ from, to, date, type, weight: halfWeight, time: time||'' });
+      // "Try another time" — keep route & date, clear the time filter
+      const noTimeParams = new URLSearchParams({ from, to, date, type, weight: weight||'' });
+
+      listEl.innerHTML = `
+        <div class="no-results animate-scale-in">
+          <div class="no-results-emoji">🚆</div>
+          <h2>Looks like the trains are packed!</h2>
+          <p>No available cargo space found for your search criteria${time ? ` after <strong>${time}</strong>` : ''}. Try one of these:</p>
+          <div class="suggestions-grid">
+            <a class="suggestion-item" href="find-cargo.html?${baseParams.toString()}" style="text-decoration:none;color:inherit">
+              📅 Try Another Date
+              <span style="display:block;font-size:0.75rem;opacity:0.65;margin-top:4px">Keep same route, pick new date</span>
+            </a>
+            <a class="suggestion-item" href="find-cargo.html?${noTimeParams.toString()}" style="text-decoration:none;color:inherit">
+              🕐 Try Another Time
+              <span style="display:block;font-size:0.75rem;opacity:0.65;margin-top:4px">${time ? 'Remove time filter & see all trains' : 'Change departure time'}</span>
+            </a>
+            <a class="suggestion-item" href="find-cargo.html?date=${encodeURIComponent(date)}&type=${encodeURIComponent(type)}&weight=${weight}&time=${encodeURIComponent(time)}" style="text-decoration:none;color:inherit">
+              🛤️ Try Another Route
+              <span style="display:block;font-size:0.75rem;opacity:0.65;margin-top:4px">Change origin &amp; destination</span>
+            </a>
+            <a class="suggestion-item" href="find-cargo.html?${halfWeightParams.toString()}" style="text-decoration:none;color:inherit">
+              ⚖️ Reduce Cargo Weight
+              <span style="display:block;font-size:0.75rem;opacity:0.65;margin-top:4px">${halfWeight ? 'Try ' + halfWeight + ' kg instead' : 'Enter lower weight'}</span>
+            </a>
+          </div>
+          <a href="find-cargo.html" class="btn btn-primary btn-lg">🔍 New Search</a>
+        </div>`;
+      return;
+    }
+
+    listEl.innerHTML = '';
+    list.forEach((t, i) => {
+      const status   = Utils.getCapacityStatus(t.availableCapacity, t.totalCapacity);
+      const pct      = Utils.occupancyPercent(t.availableCapacity, t.totalCapacity);
+      const duration = Utils.calcDuration(t.departureTime, t.arrivalTime);
+      const priceEst = weight > 0 ? Utils.calcPrice(t.pricePerKg, weight).total : Math.round(t.pricePerKg * 100);
+      const isFull   = t.availableCapacity === 0;
+      const fitsWeight = !weight || t.availableCapacity >= weight;
+
+      const card = document.createElement('div');
+      card.className = `train-result-card ${isFull ? 'full' : ''} animate-fade-up`;
+      card.style.animationDelay = (i * 0.08) + 's';
+      card.innerHTML = `
+        <div class="trc-header">
+          <div class="trc-train-info">
+            <h3>🚆 ${t.trainNumber} – ${t.trainName}</h3>
+            <p>${t.stops?.length || 2} stops · ${t.allowedCargoTypes.slice(0,3).join(', ')}</p>
+          </div>
+          <div class="badge ${status.badge}">${status.dot} ${status.label}</div>
+        </div>
+        <div class="trc-body">
+          <div class="trc-route">
+            <div class="trc-station">
+              <div class="trc-time">${t.departureTime}</div>
+              <div class="trc-city">${t.source}</div>
+            </div>
+            <div class="trc-line">
+              <div class="trc-track"></div>
+              <div class="trc-duration">${duration}</div>
+            </div>
+            <div class="trc-station" style="text-align:right">
+              <div class="trc-time">${t.arrivalTime}</div>
+              <div class="trc-city">${t.destination}</div>
+            </div>
+          </div>
+          <div class="capacity-bar-wrap">
+            <div class="capacity-bar-header">
+              <span class="capacity-bar-label">${Utils.formatWeight(t.availableCapacity)} cargo space available</span>
+              <span class="capacity-bar-value">${pct}% occupied · Total: ${Utils.formatWeight(t.totalCapacity)}</span>
+            </div>
+            <div class="capacity-bar-track">
+              <div class="capacity-bar-fill ${status.cls}" data-width="${pct}%"></div>
+            </div>
+          </div>
+          ${!fitsWeight && weight > 0 ? `<div class="alert alert-warning" style="margin-top:var(--space-3);font-size:0.82rem"><span class="alert-icon">⚠️</span><div class="alert-body">Available space (${t.availableCapacity} kg) is less than your cargo (${weight} kg)</div></div>` : ''}
+        </div>
+        <div class="trc-footer">
+          <div class="trc-price">
+            Estimated Price: <strong>${Utils.formatCurrency(priceEst)}</strong>
+            ${weight > 0 ? '' : '<span style="font-size:0.75rem;color:var(--text-muted)"> (for 100 kg)</span>'}
+          </div>
+          <div class="trc-actions">
+            <a href="train-details.html?id=${t.id}${weight?'&weight='+weight:''}" class="btn btn-ghost btn-sm">View Details</a>
+            ${isFull
+              ? `<button class="btn btn-danger btn-sm" disabled>🔴 Train Full</button>`
+              : `<a href="booking.html?trainId=${t.id}${weight?'&weight='+weight:''}" class="btn btn-primary btn-sm">Book Now →</a>`
+            }
+          </div>
+        </div>
+        ${isFull ? `<div class="full-overlay-msg">🔴 This train has no available cargo space. <a href="find-cargo.html" style="color:var(--status-full);font-weight:700">Try Another Train</a></div>` : ''}`;
+      listEl.appendChild(card);
+    });
+    setTimeout(Utils.animateCapacityBars, 200);
+  }
+
+  // Sort
+  document.getElementById('sortSelect').addEventListener('change', (e) => {
+    const val = e.target.value;
+    const sorted = [...trains].sort((a, b) => {
+      if (val === 'avail')  return b.availableCapacity - a.availableCapacity;
+      if (val === 'depart') return a.departureTime.localeCompare(b.departureTime);
+      if (val === 'price')  return a.pricePerKg - b.pricePerKg;
+    });
+    renderResults(sorted);
+  });
+
+  // Initial render with loading
+  document.getElementById('resultsList').innerHTML = `
+    <div class="train-loading">
+      <div class="train-loading-emoji">🚆</div>
+      <div class="train-loading-track"><div class="train-loading-fill"></div></div>
+      <div class="loader-text">Searching available trains…</div>
+    </div>`;
+  setTimeout(() => renderResults(trains), 900);
+});
+</script>
+</body>
+</html>

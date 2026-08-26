@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications – CargoShare</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+<div class="demo-banner">🚂 Demo Railway Network – Cargo capacity data managed by CargoShare Admin Portal</div>
+
+<nav class="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="dashboard.html" class="logo">
+        <div class="logo-icon">🚆</div>
+        <div class="logo-text">Cargo<span>Share</span></div>
+      </a>
+      <div class="nav-links">
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="find-cargo.html" class="nav-link">Find Space</a>
+        <a href="my-bookings.html" class="nav-link">My Bookings</a>
+        <a href="track-cargo.html" class="nav-link">Track Cargo</a>
+        <a href="notifications.html" class="nav-link active">Notifications</a>
+      </div>
+      <div class="nav-actions">
+        <a href="profile.html" class="btn btn-ghost btn-sm">👤 <span class="nav-user-name">Trader</span></a>
+        <button class="btn btn-secondary btn-sm" data-logout>Logout</button>
+      </div>
+      <button class="nav-hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-4)">
+      <div>
+        <h1>🔔 Notifications</h1>
+        <p>Stay updated on your cargo shipments</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="markAllRead()" style="border-color:rgba(255,255,255,0.3);color:white">Mark All Read</button>
+    </div>
+  </div>
+</div>
+
+<div class="container" style="padding-top:var(--space-8);padding-bottom:var(--space-12)">
+  <div style="max-width:700px;margin:0 auto">
+    <div id="notifsList" class="card animate-fade-up"></div>
+  </div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script>
+const NOTIF_ICONS = {
+  booking_confirmed: '🎉',
+  payment_success:   '💳',
+  cargo_loaded:      '🚂',
+  in_transit:        '🚆',
+  arrived:           '📍',
+  delivered:         '✅',
+  cancelled:         '❌',
+  default:           '🔔'
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  Auth.requireTrader();
+  renderNotifs();
+});
+
+function renderNotifs() {
+  const user   = Auth.getCurrentUser();
+  const notifs = DemoData.getNotifs(user.id || 'trader_001');
+  const el     = document.getElementById('notifsList');
+
+  if (notifs.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🔔</div><div class="empty-title">No Notifications</div><div class="empty-desc">You're all caught up! Notifications will appear here when your cargo status changes.</div></div>`;
+    return;
+  }
+
+  el.innerHTML = notifs.map((n, i) => `
+    <div class="notif-item ${n.read ? '' : 'unread'} animate-fade-up" style="animation-delay:${i*0.06}s;cursor:pointer" onclick="markRead('${n.id}')">
+      <div class="notif-icon" style="background:${n.read ? 'var(--bg-muted)' : 'var(--primary-glow)'}">
+        ${NOTIF_ICONS[n.type] || NOTIF_ICONS.default}
+      </div>
+      <div class="notif-content">
+        <div class="notif-title">${n.title}</div>
+        <div class="notif-msg">${n.message}</div>
+        <div class="notif-time">${Utils.timeAgo(n.createdAt)}</div>
+      </div>
+      ${!n.read ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:6px"></div>' : ''}
+    </div>`).join('');
+}
+
+function markRead(id) {
+  const notifs = JSON.parse(localStorage.getItem('cs_notifications') || '[]');
+  const idx    = notifs.findIndex(n => n.id === id);
+  if (idx !== -1) { notifs[idx].read = true; DemoData.saveNotifs(notifs); renderNotifs(); }
+}
+
+function markAllRead() {
+  const user   = Auth.getCurrentUser();
+  const notifs = JSON.parse(localStorage.getItem('cs_notifications') || '[]');
+  notifs.forEach(n => { if (n.userId === (user.id || 'trader_001')) n.read = true; });
+  DemoData.saveNotifs(notifs);
+  renderNotifs();
+  Utils.toast('All notifications marked as read', 'success');
+}
+</script>
+</body>
+</html>

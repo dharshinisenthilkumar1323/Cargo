@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trader Management – CargoShare Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-body">
+<div class="admin-wrapper">
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-logo">
+      <div class="admin-sidebar-logo-icon">🚆</div>
+      <div><div class="admin-sidebar-logo-text">CargoShare</div><div class="admin-sidebar-logo-sub">Admin Portal</div></div>
+    </div>
+    <div class="admin-portal-badge">🛡️ Restricted Access</div>
+    <nav class="admin-sidebar-nav">
+      <div class="admin-nav-section">
+        <div class="admin-nav-label">Overview</div>
+        <a href="dashboard.html" class="admin-nav-link"><span class="admin-nav-icon">📊</span> Dashboard</a>
+      </div>
+      <div class="admin-nav-section">
+        <div class="admin-nav-label">Management</div>
+        <a href="trains.html"   class="admin-nav-link"><span class="admin-nav-icon">🚆</span> Trains</a>
+        <a href="capacity.html" class="admin-nav-link"><span class="admin-nav-icon">📦</span> Capacity</a>
+        <a href="bookings.html" class="admin-nav-link"><span class="admin-nav-icon">🎫</span> Bookings</a>
+        <a href="traders.html"  class="admin-nav-link active"><span class="admin-nav-icon">👥</span> Traders</a>
+      </div>
+      <div class="admin-nav-section">
+        <div class="admin-nav-label">Analytics</div>
+        <a href="reports.html"  class="admin-nav-link"><span class="admin-nav-icon">📈</span> Reports</a>
+      </div>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <div class="admin-user-info">
+        <div class="admin-avatar" id="adminAvatarEl">A</div>
+        <div><div class="admin-user-name" id="adminNameEl">Admin</div><div class="admin-user-role">System Administrator</div></div>
+      </div>
+      <button class="btn-admin-ghost" style="width:100%;justify-content:center" data-logout>🚪 Logout</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="admin-menu-toggle" onclick="document.getElementById('adminSidebar').classList.toggle('open')">☰</button>
+        <div class="admin-topbar-title"><h1>Trader Accounts</h1><p>Manage registered traders and accounts</p></div>
+      </div>
+      <div class="admin-topbar-actions">
+        <div class="admin-search"><span class="admin-search-icon">🔍</span><input type="text" id="traderSearch" placeholder="Search traders…" oninput="renderTraders()"></div>
+      </div>
+    </div>
+
+    <div class="admin-content">
+      <!-- Stats Row -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+        <div class="admin-stat-card" data-icon="👥"><div class="admin-stat-value" id="sTotal">–</div><div class="admin-stat-label">Total Traders</div></div>
+        <div class="admin-stat-card" data-icon="✅"><div class="admin-stat-value" id="sActive">–</div><div class="admin-stat-label">Active Accounts</div></div>
+        <div class="admin-stat-card" data-icon="🎫"><div class="admin-stat-value" id="sBookings">–</div><div class="admin-stat-label">Total Bookings</div></div>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <span class="admin-card-title">All Registered Traders <span id="traderCount" style="font-size:0.82rem;font-weight:500;color:var(--a-muted)"></span></span>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Trader</th><th>Email</th><th>Business</th><th>City</th><th>Registered</th><th>Bookings</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="tradersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/firebase-config.js"></script>
+<script src="../js/data.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  Auth.requireAdmin();
+  const a = Auth.getCurrentUser();
+  document.getElementById('adminNameEl').textContent   = a?.name || 'Admin';
+  document.getElementById('adminAvatarEl').textContent = (a?.name || 'A')[0].toUpperCase();
+  renderTraders();
+});
+
+function renderTraders() {
+  const q        = document.getElementById('traderSearch').value.toLowerCase();
+  const bookings = DemoData.getBookings();
+  let traders    = DemoData.getUsers().filter(u => u.role === 'trader');
+
+  // Add demo traders if none registered
+  if (!traders.length) {
+    traders = DemoData.getTraders?.() || [];
+    if (!traders.length) {
+      traders = [
+        { id:'t1', name:'Senthil Kumar',    email:'trader@demo.com',      companyName:'SK Exports Pvt Ltd',    businessType:'Textiles Exporter',    city:'Chennai',    status:'active', createdAt:'2026-01-15' },
+        { id:'t2', name:'Ravi Shankar',     email:'ravi@textiles.com',    companyName:'Ravi Cotton Mills',     businessType:'Agricultural Products', city:'Coimbatore', status:'active', createdAt:'2026-02-20' },
+        { id:'t3', name:'Priya Traders',    email:'priya@traders.in',     companyName:'Priya Handicrafts',     businessType:'Handicrafts Dealer',    city:'Madurai',    status:'active', createdAt:'2026-03-05' },
+        { id:'t4', name:'Mohan Electronics',email:'mohan@electronics.com',companyName:'Mohan Tech Solutions', businessType:'Electronics Distributor',city:'Bengaluru',  status:'inactive',createdAt:'2026-04-10' },
+      ];
+    }
+  }
+
+  if (q) traders = traders.filter(t => t.name?.toLowerCase().includes(q) || t.email?.toLowerCase().includes(q) || t.companyName?.toLowerCase().includes(q));
+
+  const active   = traders.filter(t => t.status !== 'inactive').length;
+  document.getElementById('sTotal').textContent    = traders.length;
+  document.getElementById('sActive').textContent   = active;
+  document.getElementById('sBookings').textContent = bookings.length;
+  document.getElementById('traderCount').textContent = `(${traders.length})`;
+
+  const tbody = document.getElementById('tradersTableBody');
+  tbody.innerHTML = '';
+  traders.forEach(t => {
+    const tBooks = bookings.filter(b => b.userId === t.id).length;
+    const isActive = t.status !== 'inactive';
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--a-primary),var(--a-accent));display:flex;align-items:center;justify-content:center;font-weight:800;color:white;font-size:0.875rem;flex-shrink:0">${(t.name||'T')[0].toUpperCase()}</div>
+          <div><div style="font-weight:700">${t.name}</div><div style="font-size:0.72rem;color:var(--a-muted)">${t.businessType||'Trader'}</div></div>
+        </div>
+      </td>
+      <td class="text-sm">${t.email}</td>
+      <td style="font-weight:600">${t.companyName||'–'}</td>
+      <td class="text-sm">${t.city||'–'}</td>
+      <td class="text-sm">${t.createdAt ? new Date(t.createdAt).toLocaleDateString('en-IN') : '–'}</td>
+      <td style="font-weight:700;color:var(--a-primary)">${tBooks}</td>
+      <td><span class="admin-badge ${isActive?'admin-badge-active':'admin-badge-inactive'}">${isActive?'Active':'Inactive'}</span></td>
+      <td>
+        <button class="btn-admin-${isActive?'danger':'ghost'} btn-admin-sm" onclick="toggleTrader('${t.id}')">
+          ${isActive?'🚫 Deactivate':'✅ Activate'}
+        </button>
+      </td>`;
+    tbody.appendChild(row);
+  });
+}
+
+function toggleTrader(traderId) {
+  const users = DemoData.getUsers();
+  const idx   = users.findIndex(u => u.id === traderId);
+  if (idx !== -1) {
+    users[idx].status = users[idx].status === 'inactive' ? 'active' : 'inactive';
+    DemoData.saveUsers(users);
+    Utils.toast(`Trader ${users[idx].status === 'active' ? 'activated' : 'deactivated'}`, 'success');
+    renderTraders();
+  } else {
+    Utils.toast('Status updated (demo)', 'info');
+  }
+}
+</script>
+</body>
+</html>
